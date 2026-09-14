@@ -1,0 +1,86 @@
+services:
+  # 1. Database PostgreSQL 16
+  postgres:
+    image: postgres:16-alpine
+    container_name: culinary_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: CulinaryBlogDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d CulinaryBlogDb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Redis Cache 7
+  redis:
+    image: redis:7-alpine
+    container_name: culinary_redis
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 3. Object Storage MinIO (Chuyển sang Quay.io Registry chính thức)
+  minio:
+    image: quay.io/minio/minio:latest
+    container_name: culinary_minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 4. Structured Logging (Seq)
+  seq:
+    image: datalust/seq:latest
+    container_name: culinary_seq
+    restart: always
+    environment:
+      ACCEPT_EULA: "Y"
+    ports:
+      - "5341:80"
+    volumes:
+      - seqdata:/data
+
+  # 5. Email Testing Server (Mailhog)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: culinary_mailhog
+    restart: always
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+  miniodata:
+    driver: local
+  seqdata:
+    driver: local

@@ -1,4 +1,3 @@
-"# PTUDWNC-2026-Nhom17" 
 # Culinary Blog – Blog Ẩm thực và Nấu ăn
 
 > **Culinary Blog** là nền tảng ứng dụng web hiện đại cho phép người dùng khám phá, chia sẻ và quản lý các công thức nấu ăn phong phú. Hệ thống được phát triển theo mô hình **API-Driven Architecture**, phân tách độc lập giữa Backend (.NET 10 Clean Architecture) và Frontend (Next.js App Router), đáp ứng các tiêu chuẩn cao về hiệu năng, bảo mật và tối ưu SEO.
@@ -10,6 +9,7 @@
 - [Giới thiệu Kiến trúc](#giới-thiệu-kiến-trúc)
 - [Công nghệ Sử dụng](#công-nghệ-sử-dụng)
 - [Tính năng Nổi bật](#tính-năng-nổi-bật)
+- [Tài liệu Đặc tả SRS](#tài-liệu-đặc-tả-srs)
 - [Cấu trúc Dự án](#cấu-trúc-dự-án)
 - [Yêu cầu Hệ thống](#yêu-cầu-hệ-thống)
 - [Hướng dẫn Cài đặt & Chạy Local](#hướng-dẫn-cài-đặt--chạy-local)
@@ -69,7 +69,6 @@ Hệ thống tuân thủ kiến trúc phân tầng độc lập (**API-Driven Ar
 - **Storage**: MinIO S3-Compatible
 
 ---
-
 ## Tính năng Nổi bật
 
 Hệ thống bao gồm **27 Yêu cầu Chức năng (FR)** thuộc 7 module chính:
@@ -101,15 +100,52 @@ Hệ thống bao gồm **27 Yêu cầu Chức năng (FR)** thuộc 7 module chí
    - Structured Logging (Serilog) kèm `CorrelationId` và OpenTelemetry Distributed Tracing.
 
 ---
+## Tài liệu Đặc tả SRS
 
+- **Tên tài liệu**: *Culinary Blog Software Requirements Specification v1.0.0*
+- **Đường dẫn tệp tài liệu**: [`docs/SRS_Culinary_Blog_v1.0.0.pdf`](./docs/SRS_Culinary_Blog_v1.0.0.pdf)
+- **Nội dung chính trong SRS**:
+  - Đặc tả chi tiết 27 Yêu cầu Chức năng (Functional Requirements - FR).
+  - Yêu cầu Phi chức năng (NFRs): Hiệu năng (p95 ≤ 500ms), Bảo mật OWASP, Tối ưu SEO.
+  - Sơ đồ Cơ sở Dữ liệu (Data Model / ERD) & Đặc tả REST API (~30 Endpoints).
+
+---
 ## Cấu trúc Dự án
 
+```
+WebNC/
+├── .gitignore
+├── docker-compose.yml           # Configuration cho local development (DB, Cache, Storage)
+├── git
+├── README.md
+│
+├── docs/                        # Tài liệu dự án
+│   └── SRS_Culinary_Blog_v1.0.0.pdf  # Tài liệu Đặc tả Yêu cầu Phần mềm (SRS)
+│   └── BangPhanCong.docx  # Tài liệu phân công công việc
+│
+├── src/
+│   ├── Backend/                 # Clean Architecture Solution
+│   │   ├── CulinaryBlog.Domain/         # Core Domain Entities, Interfaces, Enums
+│   │   ├── CulinaryBlog.Application/    # Commands, Queries, Handlers, DTOs, Validators
+│   │   ├── CulinaryBlog.Infrastructure/ # EF Core, MinIO, Redis, Identity, Hangfire
+│   │   ├── CulinaryBlog.API/            # Minimal API Endpoints, Middlewares, Program.cs
+│   │   └── CulinaryBlog.sln 
+│   │
+│   └── Frontend/                # Next.js Application
+│       ├── node_modules/
+│       ├── package-lock.json
+│       └── package.json
+```
 ---
 
 ## Yêu cầu Hệ thống
 
 Để khởi chạy dự án ở môi trường phát triển (Development), máy tính của bạn cần cài đặt:
 
+- **.NET 10 SDK** (v10.0.x)
+- **Node.js** (v20+ LTS) & **npm** (v10+)
+- **Docker Desktop** (v4.x+) hoặc Docker Engine
+- **Git** (v2.40+)
 
 ---
 
@@ -118,7 +154,41 @@ Hệ thống bao gồm **27 Yêu cầu Chức năng (FR)** thuộc 7 module chí
 ### **Bước 1: Clone Repository**
 ```bash
 git clone https://github.com/BaoThw05/PTUDWNC-2026-Nhom17.git
+cd WebNC
 ```
+### **Bước 2: Khởi chạy Hạ tầng Môi trường (Docker Compose)**
+Khởi chạy PostgreSQL, Redis, MinIO, Seq và Mailhog:
+```bash
+docker compose up -d
+```
+
+### **Bước 3: Khởi chạy Backend API (.NET 10)**
+1. Chuyển vào thư mục Backend API:
+   ```bash
+   cd src/Backend/CulinaryBlog.API
+   ```
+2. Khôi phục packages và cập nhật CSDL PostgreSQL:
+   ```bash
+   dotnet restore
+   dotnet ef database update --project ../CulinaryBlog.Infrastructure
+   ```
+3. Chạy ứng dụng Backend:
+   ```bash
+   dotnet run
+   ```
+   > Backend API sẽ chạy tại: `http://localhost:5000` (Giao diện tài liệu API Scalar tại `http://localhost:5000/scalar`).
+
+### **Bước 4: Khởi chạy Frontend (Next.js)**
+1. Mở terminal mới, chuyển vào thư mục Frontend:
+   ```bash
+   cd src/Frontend
+   ```
+2. Cài đặt phụ thuộc và khởi chạy dev server:
+   ```bash
+   npm install
+   npm run dev
+   ```
+   > Frontend Web sẽ chạy tại: `http://localhost:3000`.
 ---
 ## Thành viên phát triển dự án
 
@@ -127,4 +197,6 @@ git clone https://github.com/BaoThw05/PTUDWNC-2026-Nhom17.git
 | 2312763 | <nobr>**Trần Lê Bảo Thư**</nobr> | Full-Stack: Module Tìm kiếm Full-Text, SEO, Sitemap & Observability (`FR-SRCH`, `FR-OBS`, `FR-JOB-003`) | [![Git Profile](https://img.shields.io/badge/GitHub-Profile-181717?logo=github)](https://github.com/BaoThw05) |
 | 2312793 | <nobr>**Nguyễn Ngọc Tuấn**</nobr> | Full-Stack: Module Xác thực, Người dùng & Welcome Email (`FR-AUTH`, `FR-JOB-001`) | [![Git Profile](https://img.shields.io/badge/GitHub-Profile-181717?logo=github)](https://github.com/Liu-548) |
 | 2312776 | <nobr>**Bùi Ngọc Toàn**</nobr> | Full-Stack: Module Công thức Nấu ăn Cốt lõi, Bước & Nguyên liệu (`FR-RCP`) | [![Git Profile](https://img.shields.io/badge/GitHub-Profile-181717?logo=github)](https://github.com/2312776-beep) |
-| 2312735 | <nobr>**Lương Đức Sang**</nobr> | Full-Stack: Module Danh mục, Quản lý Tệp tin & Job Resize Ảnh (`FR-CAT`, `FR-FILE`, `FR-JOB-002`) | [![Git Profile](https://img.shields.io/badge/GitHub-Profile-181717?logo=github)](https://github.com/username3) |
+| 2312735 | <nobr>**Lương Đức Sang**</nobr> | Full-Stack: Module Danh mục, Quản lý Tệp tin & Job Resize Ảnh (`FR-CAT`, `FR-FILE`, `FR-JOB-002`) | [![Git Profile](https://img.shields.io/badge/GitHub-Profile-181717?logo=github)](https://github.com/zoronoa188) |
+
+- **Đường dẫn tệp tài liệu phân công công việc**: [`docs/BangPhanCong.docx`](./docs/BangPhanCong.docx)
