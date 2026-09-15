@@ -1,10 +1,11 @@
+using CulinaryBlog.Domain.Constants;
 using Microsoft.AspNetCore.Identity;
 
 namespace CulinaryBlog.API.Seed;
 
 public static class RoleSeeder
 {
-    private static readonly string[] DefaultRoles = ["Author", "Admin"];
+    private static readonly string[] DefaultRoles = [Roles.Author, Roles.Admin];
 
     public static async Task SeedRolesAsync(IServiceProvider services)
     {

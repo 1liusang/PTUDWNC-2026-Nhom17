@@ -2,6 +2,7 @@ using CulinaryBlog.Application.Auth.Dtos;
 using CulinaryBlog.Application.Auth.Mappers;
 using CulinaryBlog.Application.Common.Exceptions;
 using CulinaryBlog.Application.Common.Interfaces;
+using CulinaryBlog.Domain.Constants;
 using CulinaryBlog.Domain.Entities;
 using Hangfire;
 using MediatR;
@@ -11,7 +12,6 @@ namespace CulinaryBlog.Application.Auth.Register;
 
 public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthResponseDto>
 {
-    public const string DefaultRole = "Author";
     private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(7);
 
     private readonly UserManager<ApplicationUser> _userManager;
@@ -48,7 +48,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, AuthRespo
                 new FluentValidation.Results.ValidationFailure(nameof(request.Password), e.Description)));
         }
 
-        await _userManager.AddToRoleAsync(user, DefaultRole);
+        await _userManager.AddToRoleAsync(user, Roles.Author);
 
         var roles = await _userManager.GetRolesAsync(user);
 

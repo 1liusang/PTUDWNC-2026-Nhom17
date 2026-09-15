@@ -1,5 +1,6 @@
 using System.Text;
 using System.Threading.RateLimiting;
+using CulinaryBlog.API.Authorization;
 using CulinaryBlog.API.Endpoints;
 using CulinaryBlog.API.Middlewares;
 using CulinaryBlog.API.Seed;
@@ -50,7 +51,7 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options => options.AddCulinaryBlogPolicies());
 
 // NFR-SEC-003: giới hạn request tới /auth/* để chống brute-force.
 builder.Services.AddRateLimiter(options =>
