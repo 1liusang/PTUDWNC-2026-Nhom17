@@ -1,6 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using System.Text.Json;
+using CulinaryBlog.Application.Common.Exceptions;
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CulinaryBlog.API.Middlewares;
 
@@ -31,15 +33,38 @@ public class GlobalExceptionMiddleware
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/problem+json";
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-        var problemDetails = new ProblemDetails
+        var (statusCode, title) = exception switch
         {
-            Status = context.Response.StatusCode,
-            Title = "Server Error",
-            Detail = "An unexpected error occurred. Please try again later.",
-            Instance = context.Request.Path
+            ConflictException => (HttpStatusCode.Conflict, "Conflict"),
+            NotFoundException => (HttpStatusCode.NotFound, "Not Found"),
+            AppUnauthorizedException => (HttpStatusCode.Unauthorized, "Unauthorized"),
+            AccountLockedException => (HttpStatusCode.Locked, "Account Locked"),
+            ValidationException => (HttpStatusCode.UnprocessableEntity, "Validation Error"),
+            _ => (HttpStatusCode.InternalServerError, "Server Error"),
         };
+
+        context.Response.StatusCode = (int)statusCode;
+
+        object problemDetails = exception is ValidationException validationException
+            ? new ValidationProblemDetails(
+                validationException.Errors
+                    .GroupBy(e => e.PropertyName)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray()))
+            {
+                Status = context.Response.StatusCode,
+                Title = title,
+                Instance = context.Request.Path,
+            }
+            : new ProblemDetails
+            {
+                Status = context.Response.StatusCode,
+                Title = title,
+                Detail = statusCode == HttpStatusCode.InternalServerError
+                    ? "An unexpected error occurred. Please try again later."
+                    : exception.Message,
+                Instance = context.Request.Path,
+            };
 
         var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         return context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails, jsonOptions));
