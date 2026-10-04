@@ -136,9 +136,9 @@ export function CategoryAdmin() {
         </label>
         <label className="block text-sm font-medium">
           URL ảnh đại diện
-          <input type="url" maxLength={500} value={form.imageUrl}
+          <input type="text" maxLength={500} value={form.imageUrl}
             onChange={(event) => setForm({ ...form, imageUrl: event.target.value })}
-            placeholder="https://…"
+            placeholder="/media/... hoặc https://..."
             className="mt-1 block w-full rounded-lg border border-black/20 bg-transparent px-3 py-2 dark:border-white/25" />
         </label>
         <button type="submit" disabled={busy}
