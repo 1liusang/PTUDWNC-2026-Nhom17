@@ -16,11 +16,6 @@ namespace CulinaryBlog.Infrastructure.Migrations
                 column: "AuthorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Recipes_CategoryId",
-                table: "Recipes",
-                column: "CategoryId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Recipes_Status_CreatedAt",
                 table: "Recipes",
                 columns: new[] { "Status", "CreatedAt" });
@@ -31,10 +26,6 @@ namespace CulinaryBlog.Infrastructure.Migrations
         {
             migrationBuilder.DropIndex(
                 name: "IX_Recipes_AuthorId",
-                table: "Recipes");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Recipes_CategoryId",
                 table: "Recipes");
 
             migrationBuilder.DropIndex(
