@@ -44,6 +44,16 @@ public sealed class RecipeImageCommandTests
     }
 
     [Fact]
+    public async Task Upload_AvifSignature_IsRejectedByCurrentDecision()
+    {
+        var fixture = new Fixture();
+        using var file = new MemoryStream([0, 0, 0, 20, 0x66, 0x74, 0x79, 0x70, 0x61, 0x76, 0x69, 0x66]);
+
+        await Assert.ThrowsAsync<FileTypeNotAllowedException>(() => fixture.Upload.Handle(
+            new UploadRecipeImageCommand(fixture.Recipe.Id, file, "image/avif", null), CancellationToken.None));
+    }
+
+    [Fact]
     public async Task Upload_OverFiveMegabytes_RejectsWithoutStorageWrite()
     {
         var fixture = new Fixture();

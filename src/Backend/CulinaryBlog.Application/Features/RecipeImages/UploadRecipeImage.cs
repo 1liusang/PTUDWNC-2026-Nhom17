@@ -30,7 +30,7 @@ public sealed class UploadRecipeImageCommandHandler(
 
         using var content = await ReadContentAsync(request.Content, cancellationToken);
         var format = DetectFormat(content.GetBuffer().AsSpan(0, (int)content.Length))
-            ?? throw new FileTypeNotAllowedException("Chỉ chấp nhận ảnh JPEG, PNG, WebP hoặc AVIF.", "FILE_TYPE_NOT_ALLOWED");
+            ?? throw new FileTypeNotAllowedException("Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP.", "FILE_TYPE_NOT_ALLOWED");
         if (!string.Equals(request.ContentType, format.ContentType, StringComparison.OrdinalIgnoreCase))
         {
             throw new FileTypeNotAllowedException("Định dạng file không khớp loại ảnh khai báo.", "FILE_TYPE_NOT_ALLOWED");
@@ -103,8 +103,6 @@ public sealed class UploadRecipeImageCommandHandler(
         if (content.Length >= 3 && content[..3].SequenceEqual(new byte[] { 0xFF, 0xD8, 0xFF })) return new("jpg", "image/jpeg");
         if (content.Length >= 8 && content[..8].SequenceEqual(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A })) return new("png", "image/png");
         if (content.Length >= 12 && content[..4].SequenceEqual("RIFF"u8) && content.Slice(8, 4).SequenceEqual("WEBP"u8)) return new("webp", "image/webp");
-        if (content.Length >= 12 && content.Slice(4, 4).SequenceEqual("ftyp"u8) &&
-            (content.Slice(8, 4).SequenceEqual("avif"u8) || content.Slice(8, 4).SequenceEqual("avis"u8))) return new("avif", "image/avif");
         return null;
     }
 
