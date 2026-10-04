@@ -18,6 +18,15 @@ internal sealed class RecipeImagesEndpoints : IEndpointModule
             .WithTags(Tag)
             .RequireAuthorization(AuthPolicies.Author);
 
+        recipeImages.MapGet("/", async (
+            Guid recipeId,
+            IMediator mediator,
+            CancellationToken cancellationToken) =>
+        {
+            var images = await mediator.Send(new GetRecipeImagesQuery(recipeId), cancellationToken);
+            return Results.Ok(images);
+        }).WithName("GetRecipeImages");
+
         recipeImages.MapPost("/", async (
             Guid recipeId,
             IFormFile file,

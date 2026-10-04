@@ -129,6 +129,28 @@ public sealed class RecipeImageCommandTests
         Assert.Equal($"recipes/{fixture.Recipe.Id}/{first.Id}", fixture.Jobs.DeletedPrefix);
     }
 
+    [Fact]
+    public async Task GetImages_ReturnsImagesInDisplayOrderForOwner()
+    {
+        var fixture = new Fixture();
+        var later = fixture.AddImage(isPrimary: false, order: 3);
+        var first = fixture.AddImage(isPrimary: true, order: 0);
+
+        var images = await fixture.Get.Handle(new GetRecipeImagesQuery(fixture.Recipe.Id), CancellationToken.None);
+
+        Assert.Equal([first.Id, later.Id], images.Select(image => image.ImageId));
+    }
+
+    [Fact]
+    public async Task GetImages_WhenCallerIsNotOwner_ThrowsForbidden()
+    {
+        var fixture = new Fixture();
+        fixture.CurrentUser.UserId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<ForbiddenException>(() => fixture.Get.Handle(
+            new GetRecipeImagesQuery(fixture.Recipe.Id), CancellationToken.None));
+    }
+
     private sealed class Fixture
     {
         public TestDb Db { get; } = new();
@@ -140,6 +162,7 @@ public sealed class RecipeImageCommandTests
         public UploadRecipeImageCommandHandler Upload { get; }
         public UpdateRecipeImageCommandHandler Update { get; }
         public DeleteRecipeImageCommandHandler Delete { get; }
+        public GetRecipeImagesQueryHandler Get { get; }
 
         public Fixture()
         {
@@ -149,6 +172,7 @@ public sealed class RecipeImageCommandTests
             Upload = new UploadRecipeImageCommandHandler(Db, Storage, Jobs, authorization, Cache);
             Update = new UpdateRecipeImageCommandHandler(Db, Storage, authorization, Cache);
             Delete = new DeleteRecipeImageCommandHandler(Db, authorization, Jobs, Cache);
+            Get = new GetRecipeImagesQueryHandler(Db, Storage, authorization);
         }
 
         public RecipeImage AddImage(bool isPrimary, int order)

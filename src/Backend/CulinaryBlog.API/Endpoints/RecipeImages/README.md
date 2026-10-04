@@ -6,6 +6,7 @@
 
 ## API
 
+- `GET /api/v1/recipes/{recipeId}/images`: trả danh sách ảnh theo `orderIndex`, dùng cho wizard và trang sửa.
 - `POST /api/v1/recipes/{recipeId}/images`: multipart `file`, `altText?`; JPEG/PNG/WebP tối đa 5 MB. Trả 201 với `imageId`, `originalUrl`, `altText`, `isPrimary`, `orderIndex`.
 - `PATCH /api/v1/recipes/{recipeId}/images/{imageId}`: JSON với các trường tùy chọn `altText`, `isPrimary`, `orderIndex`. Gửi `altText: null` để xóa mô tả. Trả 200 với dữ liệu ảnh mới.
 - `DELETE /api/v1/recipes/{recipeId}/images/{imageId}`: xóa bản ghi, chọn ảnh chính kế tiếp, xếp job xóa file theo prefix. Trả 204.
