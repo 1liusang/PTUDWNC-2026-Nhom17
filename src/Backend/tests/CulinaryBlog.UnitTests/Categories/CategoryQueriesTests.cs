@@ -93,5 +93,6 @@ public sealed class CategoryQueriesTests
         public void Remove<TEntity>(TEntity entity) where TEntity : class => throw new NotSupportedException();
         public void SetOriginalVersion<TEntity>(TEntity entity, uint version) where TEntity : BaseEntity => throw new NotSupportedException();
         public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => throw new NotSupportedException();
+        public Task ExecuteInTransactionAsync(Func<Task> action, CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 }

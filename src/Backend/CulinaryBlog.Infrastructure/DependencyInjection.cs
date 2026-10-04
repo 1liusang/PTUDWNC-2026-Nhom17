@@ -53,6 +53,7 @@ public static class DependencyInjection
         AddFileStorage(services, configuration);
         services.AddSingleton<IBackgroundJobService, HangfireBackgroundJobService>();
         services.AddTransient<IRecipeImageResizeJob, RecipeImageResizeJob>();
+        services.AddTransient<IRecipeImageDeleteJob, RecipeImageDeleteJob>();
 
         services.AddHangfire(configuration => configuration
             .UseSimpleAssemblyNameTypeSerializer()
