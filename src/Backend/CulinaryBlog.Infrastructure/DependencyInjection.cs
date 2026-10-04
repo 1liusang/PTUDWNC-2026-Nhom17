@@ -1,9 +1,13 @@
-﻿using Amazon.Runtime;
+using Amazon.Runtime;
 using Amazon.S3;
 using CulinaryBlog.Application.Abstractions;
 using CulinaryBlog.Infrastructure.BackgroundJobs;
+using CulinaryBlog.Infrastructure.Auth;
+using CulinaryBlog.Infrastructure.Observability;
 using CulinaryBlog.Infrastructure.Persistence;
+using CulinaryBlog.Infrastructure.Persistence.Interceptors;
 using CulinaryBlog.Infrastructure.RecipeImages;
+using CulinaryBlog.Infrastructure.Services;
 using CulinaryBlog.Infrastructure.Storage;
 using Hangfire;
 using Hangfire.PostgreSql;
@@ -28,8 +32,22 @@ public static class DependencyInjection
                 ? "Host=localhost;Database=CulinaryBlogTest;Username=test;Password=test"
                 : throw new InvalidOperationException($"Connection string '{ConnectionStringName}' is missing."));
 
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICategoryValidator, DefaultCategoryValidator>();
+
+        services.AddSingleton<AuditInterceptor>();
+
+        services.AddDbContext<AppDbContext>((sp, options) =>
+        {
+            var auditInterceptor = sp.GetRequiredService<AuditInterceptor>();
+            options.UseNpgsql(connectionString)
+                .AddInterceptors(auditInterceptor);
+        });
+        services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.SectionName));
+        services.AddHostedService<DatabaseInitializer>();
+
+        services.AddAuthInfrastructure(configuration);
+        services.AddSingleton<ICacheInvalidator, NoOpCacheInvalidator>();
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         AddFileStorage(services, configuration);
