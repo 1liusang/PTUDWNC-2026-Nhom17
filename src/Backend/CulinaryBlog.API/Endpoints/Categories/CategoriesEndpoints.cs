@@ -1,3 +1,4 @@
+using CulinaryBlog.API.Auth;
 using CulinaryBlog.Application.Common.Models;
 using CulinaryBlog.Application.Features.Categories;
 using MediatR;
@@ -38,7 +39,6 @@ internal sealed class CategoriesEndpoints : IEndpointModule
         })
         .WithName("GetCategoryBySlug");
 
-        // TODO(TV1): thêm RequireAuthorization(policy => policy.RequireRole("Admin")) khi JWT/policy đã được merge.
         categories.MapPost("/", async (
             CreateCategoryCommand command,
             IMediator mediator,
@@ -47,7 +47,8 @@ internal sealed class CategoriesEndpoints : IEndpointModule
             var result = await mediator.Send(command, cancellationToken);
             return Results.Created($"/api/v1/categories/{result.Id}", result);
         })
-        .WithName("CreateCategory");
+        .WithName("CreateCategory")
+        .RequireAuthorization(AuthPolicies.Admin);
 
         categories.MapPut("/{id:guid}", async (
             Guid id,
@@ -58,7 +59,8 @@ internal sealed class CategoriesEndpoints : IEndpointModule
             var result = await mediator.Send(command with { Id = id }, cancellationToken);
             return Results.Ok(result);
         })
-        .WithName("UpdateCategory");
+        .WithName("UpdateCategory")
+        .RequireAuthorization(AuthPolicies.Admin);
 
         categories.MapDelete("/{id:guid}", async (
             Guid id,
@@ -68,6 +70,7 @@ internal sealed class CategoriesEndpoints : IEndpointModule
             await mediator.Send(new DeleteCategoryCommand(id), cancellationToken);
             return Results.NoContent();
         })
-        .WithName("DeleteCategory");
+        .WithName("DeleteCategory")
+        .RequireAuthorization(AuthPolicies.Admin);
     }
 }

@@ -48,6 +48,7 @@ public sealed class CreateCategoryCommandHandler(IAppDbContext db)
         db.Add(category);
         await db.SaveChangesAsync(cancellationToken);
 
-        return new CategoryDto(category.Id, category.Name, category.Slug, category.Description, category.ImageUrl, 0);
+        return new CategoryDto(category.Id, category.Name, category.Slug, category.Description, category.ImageUrl,
+            category.OrderIndex, 0);
     }
 }

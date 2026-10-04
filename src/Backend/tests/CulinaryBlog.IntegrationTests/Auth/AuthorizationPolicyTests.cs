@@ -62,6 +62,20 @@ public sealed class AuthorizationPolicyTests : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("POST", "/api/v1/categories")]
+    [InlineData("PUT", "/api/v1/categories/11111111-1111-1111-1111-111111111111")]
+    [InlineData("DELETE", "/api/v1/categories/11111111-1111-1111-1111-111111111111")]
+    public async Task CategoryWriteEndpoints_WithAuthorToken_Return403(string method, string path)
+    {
+        using var client = _factory.CreateClient();
+        using var request = AuthApi.WithBearer(new HttpMethod(method), path, IssueToken(Roles.Author));
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
     [Fact]
     public async Task AuthorPolicy_WithTamperedToken_Returns401()
     {

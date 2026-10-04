@@ -1,5 +1,6 @@
 using CulinaryBlog.Application.Abstractions;
 using CulinaryBlog.Application.Common.Exceptions;
+using CulinaryBlog.Domain.Enums;
 using FluentValidation;
 using MediatR;
 
@@ -50,6 +51,9 @@ public sealed class UpdateCategoryCommandHandler(IAppDbContext db)
 
         await db.SaveChangesAsync(cancellationToken);
 
-        return new CategoryDto(category.Id, category.Name, category.Slug, category.Description, category.ImageUrl, 0);
+        var recipeCount = db.Recipes.Count(recipe =>
+            recipe.CategoryId == category.Id && recipe.Status == RecipeStatus.Published);
+        return new CategoryDto(category.Id, category.Name, category.Slug, category.Description, category.ImageUrl,
+            category.OrderIndex, recipeCount);
     }
 }

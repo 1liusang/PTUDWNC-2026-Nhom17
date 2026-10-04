@@ -25,6 +25,7 @@ public sealed class CategoryQueriesTests
             category =>
             {
                 Assert.Equal("Món chính", category.Name);
+                Assert.Equal(1, category.OrderIndex);
                 Assert.Equal(1, category.RecipeCount);
             },
             category => Assert.Equal("Món khai vị", category.Name));
