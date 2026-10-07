@@ -14,3 +14,28 @@ export type CategoryInput = {
   imageUrl: string | null;
   orderIndex: number;
 };
+
+export type CategoryRecipe = {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  prepTimeMinutes: number;
+  cookTimeMinutes: number;
+  servings: number;
+  difficulty: number | string;
+  publishedAt: string | null;
+};
+
+export type CategoryDetail = {
+  category: Category;
+  recipes: {
+    items: CategoryRecipe[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+};
