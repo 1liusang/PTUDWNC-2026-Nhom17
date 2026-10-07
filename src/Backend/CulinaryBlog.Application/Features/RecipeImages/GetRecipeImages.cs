@@ -25,6 +25,8 @@ public sealed class GetRecipeImagesQueryHandler(
             .ThenBy(item => item.Id)
             .ToList()
             .Select(item => new RecipeImageDto(item.Id, storage.GetPublicUrl(item.OriginalKey),
+                item.MediumKey is null ? null : storage.GetPublicUrl(item.MediumKey),
+                item.ThumbnailKey is null ? null : storage.GetPublicUrl(item.ThumbnailKey),
                 item.AltText, item.IsPrimary, item.OrderIndex))
             .ToList();
         return Task.FromResult(images);

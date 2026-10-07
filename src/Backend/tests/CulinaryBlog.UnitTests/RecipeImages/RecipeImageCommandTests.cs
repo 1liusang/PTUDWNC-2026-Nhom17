@@ -237,6 +237,8 @@ public sealed class RecipeImageCommandTests
             UploadedContentType = contentType;
             return Task.CompletedTask;
         }
+        public Task<Stream> OpenReadAsync(string key, CancellationToken cancellationToken = default) =>
+            Task.FromResult<Stream>(new MemoryStream());
         public Task DeleteAsync(string key, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task DeleteByPrefixAsync(string prefix, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public string GetPublicUrl(string key) => $"/media/{key}";

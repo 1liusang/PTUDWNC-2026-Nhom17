@@ -292,7 +292,7 @@ export function RecipeImageManager({ recipeId, initialImages, onChange }: Recipe
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Danh sách ảnh công thức">
           {orderedImages.map((image, index) => (
             <li key={image.imageId} className="overflow-hidden rounded-xl border">
-              <img src={image.originalUrl} alt={image.altText || "Ảnh công thức"}
+              <img src={image.thumbnailUrl ?? image.originalUrl} alt={image.altText || "Ảnh công thức"}
                 className="aspect-video w-full object-cover" />
               <div className="space-y-3 p-3">
                 <div className="flex items-center justify-between text-sm">

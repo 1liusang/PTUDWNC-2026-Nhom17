@@ -77,7 +77,8 @@ public sealed class UploadRecipeImageCommandHandler(
         backgroundJobs.Enqueue<IRecipeImageResizeJob>(job => job.ExecuteAsync(image.Id));
         await cache.InvalidateAsync(["recipes"], cancellationToken);
 
-        return new RecipeImageDto(image.Id, storage.GetPublicUrl(image.OriginalKey), image.AltText, image.IsPrimary, image.OrderIndex);
+        return new RecipeImageDto(image.Id, storage.GetPublicUrl(image.OriginalKey), null, null,
+            image.AltText, image.IsPrimary, image.OrderIndex);
     }
 
     private static async Task<MemoryStream> ReadContentAsync(Stream source, CancellationToken cancellationToken)
@@ -109,4 +110,11 @@ public sealed class UploadRecipeImageCommandHandler(
     private sealed record ImageFormat(string Extension, string ContentType);
 }
 
-public sealed record RecipeImageDto(Guid ImageId, string OriginalUrl, string? AltText, bool IsPrimary, int OrderIndex);
+public sealed record RecipeImageDto(
+    Guid ImageId,
+    string OriginalUrl,
+    string? MediumUrl,
+    string? ThumbnailUrl,
+    string? AltText,
+    bool IsPrimary,
+    int OrderIndex);

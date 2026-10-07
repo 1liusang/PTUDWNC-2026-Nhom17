@@ -56,6 +56,9 @@ public sealed class UpdateRecipeImageCommandHandler(
             await SaveUpdateAsync();
 
         await cache.InvalidateAsync(["recipes"], cancellationToken);
-        return new RecipeImageDto(image.Id, storage.GetPublicUrl(image.OriginalKey), image.AltText, image.IsPrimary, image.OrderIndex);
+        return new RecipeImageDto(image.Id, storage.GetPublicUrl(image.OriginalKey),
+            image.MediumKey is null ? null : storage.GetPublicUrl(image.MediumKey),
+            image.ThumbnailKey is null ? null : storage.GetPublicUrl(image.ThumbnailKey),
+            image.AltText, image.IsPrimary, image.OrderIndex);
     }
 }
