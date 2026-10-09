@@ -3,6 +3,7 @@ using CulinaryBlog.Application.Abstractions;
 using CulinaryBlog.Application.Common.Exceptions;
 using CulinaryBlog.Application.Features.RecipeImages;
 using CulinaryBlog.Application.Features.Recipes;
+using CulinaryBlog.Domain.Auth;
 using CulinaryBlog.Domain.Common;
 using CulinaryBlog.Domain.Entities;
 
@@ -28,6 +29,35 @@ public sealed class RecipeImageCommandTests
         Assert.NotNull(fixture.Recipe.UpdatedAt);
         Assert.Single(fixture.Db.Images);
         Assert.Contains(nameof(IRecipeImageResizeJob), fixture.Jobs.Enqueued[0]);
+    }
+
+    [Theory]
+    [InlineData("image/png", "png", new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A })]
+    [InlineData("image/webp", "webp", new byte[] { 0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50 })]
+    public async Task Upload_ValidPngOrWebp_UsesSignatureForStorage(string contentType, string extension, byte[] signature)
+    {
+        var fixture = new Fixture();
+        using var file = new MemoryStream(signature);
+
+        var result = await fixture.Upload.Handle(
+            new UploadRecipeImageCommand(fixture.Recipe.Id, file, contentType, null), CancellationToken.None);
+
+        Assert.EndsWith($"/original.{extension}", fixture.Storage.UploadedKey);
+        Assert.Equal(contentType, fixture.Storage.UploadedContentType);
+        Assert.True(result.IsPrimary);
+    }
+
+    [Fact]
+    public async Task Upload_ForgedImageWithAllowedMime_RejectsWithoutStorageWrite()
+    {
+        var fixture = new Fixture();
+        using var file = new MemoryStream("not an image"u8.ToArray());
+
+        var error = await Assert.ThrowsAsync<FileTypeNotAllowedException>(() => fixture.Upload.Handle(
+            new UploadRecipeImageCommand(fixture.Recipe.Id, file, "image/jpeg", null), CancellationToken.None));
+
+        Assert.Equal("FILE_TYPE_NOT_ALLOWED", error.Code);
+        Assert.Null(fixture.Storage.UploadedKey);
     }
 
     [Fact]
@@ -82,6 +112,21 @@ public sealed class RecipeImageCommandTests
     }
 
     [Fact]
+    public async Task Upload_AdminCanModifyAnotherAuthorsRecipe()
+    {
+        var fixture = new Fixture();
+        fixture.CurrentUser.UserId = Guid.NewGuid();
+        fixture.CurrentUser.IsAdmin = true;
+        using var file = new MemoryStream(Jpeg);
+
+        var result = await fixture.Upload.Handle(
+            new UploadRecipeImageCommand(fixture.Recipe.Id, file, "image/jpeg", null), CancellationToken.None);
+
+        Assert.True(result.IsPrimary);
+        Assert.Single(fixture.Db.Images);
+    }
+
+    [Fact]
     public async Task Update_SetPrimary_LeavesExactlyOnePrimary()
     {
         var fixture = new Fixture();
@@ -113,6 +158,22 @@ public sealed class RecipeImageCommandTests
     }
 
     [Fact]
+    public async Task UpdateAndDelete_WhenCallerIsNotOwner_ThrowForbidden()
+    {
+        var fixture = new Fixture();
+        var image = fixture.AddImage(isPrimary: true, order: 0);
+        fixture.CurrentUser.UserId = Guid.NewGuid();
+
+        await Assert.ThrowsAsync<ForbiddenException>(() => fixture.Update.Handle(
+            new UpdateRecipeImageCommand(fixture.Recipe.Id, image.Id, true, "Khác", null, null), CancellationToken.None));
+        await Assert.ThrowsAsync<ForbiddenException>(() => fixture.Delete.Handle(
+            new DeleteRecipeImageCommand(fixture.Recipe.Id, image.Id), CancellationToken.None));
+
+        Assert.Contains(image, fixture.Db.Images);
+        Assert.Null(fixture.Jobs.DeletedPrefix);
+    }
+
+    [Fact]
     public async Task Delete_Primary_PromotesLowestOrderAndQueuesPrefixDeletion()
     {
         var fixture = new Fixture();
@@ -127,6 +188,19 @@ public sealed class RecipeImageCommandTests
         Assert.False(later.IsPrimary);
         Assert.Equal(1, fixture.Db.TransactionCount);
         Assert.Equal($"recipes/{fixture.Recipe.Id}/{first.Id}", fixture.Jobs.DeletedPrefix);
+    }
+
+    [Fact]
+    public async Task Delete_LastImage_DoesNotBlockPublishedRecipe()
+    {
+        var fixture = new Fixture();
+        var image = fixture.AddImage(isPrimary: true, order: 0);
+        fixture.Recipe.Status = CulinaryBlog.Domain.Enums.RecipeStatus.Published;
+
+        await fixture.Delete.Handle(new DeleteRecipeImageCommand(fixture.Recipe.Id, image.Id), CancellationToken.None);
+
+        Assert.Empty(fixture.Db.Images);
+        Assert.Equal($"recipes/{fixture.Recipe.Id}/{image.Id}", fixture.Jobs.DeletedPrefix);
     }
 
     [Fact]
@@ -190,8 +264,9 @@ public sealed class RecipeImageCommandTests
     private sealed class TestCurrentUser : ICurrentUser
     {
         public Guid? UserId { get; set; }
+        public bool IsAdmin { get; set; }
         public string? IpAddress => null;
-        public bool IsInRole(string role) => false;
+        public bool IsInRole(string role) => IsAdmin && role == Roles.Admin;
     }
 
     private sealed class TestDb : IAppDbContext
