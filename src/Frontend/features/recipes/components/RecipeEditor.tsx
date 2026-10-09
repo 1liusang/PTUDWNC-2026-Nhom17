@@ -12,6 +12,7 @@ import {
 } from "../api/client";
 import type { RecipeSummary, UpdateRecipeRequest } from "../types";
 import { ApiError } from "@/lib/api/client";
+import { RecipeImageManager } from "@/features/images/components/RecipeImageManager";
 
 interface RecipeEditorProps {
   recipeId: string;
@@ -67,7 +68,26 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
   };
 
   useEffect(() => {
-    loadRecipe();
+    let active = true;
+    getRecipeById(recipeId)
+      .then((data) => {
+        if (!active) return;
+        setRecipe(data);
+        setTitle(data.title);
+        setDescription(data.description);
+        setPrepTimeMinutes(data.prepTimeMinutes);
+        setCookTimeMinutes(data.cookTimeMinutes);
+        setServings(data.servings);
+        setDifficulty(typeof data.difficulty === "number" ? data.difficulty : 0);
+        setVersion(data.version);
+      })
+      .catch((err: unknown) => {
+        if (active) setErrorMessage((err as Error).message || "Không thể tải thông tin công thức.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => { active = false; };
   }, [recipeId]);
 
   // Cập nhật thông tin chung (PUT /recipes/{id})
@@ -445,6 +465,10 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+        <RecipeImageManager recipeId={recipeId} />
       </div>
     </div>
   );

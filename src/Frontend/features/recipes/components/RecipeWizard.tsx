@@ -10,6 +10,7 @@ import type {
   RecipeNutrition,
 } from "../types";
 import { ApiError } from "@/lib/api/client";
+import { RecipeImageManager } from "@/features/images/components/RecipeImageManager";
 
 export function RecipeWizard() {
   const router = useRouter();
@@ -17,6 +18,8 @@ export function RecipeWizard() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [createdRecipeId, setCreatedRecipeId] = useState<string | null>(null);
+  const [imagesPending, setImagesPending] = useState(false);
 
   // B1: Thông tin chung & dinh dưỡng
   const [title, setTitle] = useState("");
@@ -117,8 +120,8 @@ export function RecipeWizard() {
     }
   };
 
-  // Submit tạo bài (Lưu nháp hoặc Xuất bản)
-  const handleSubmit = async (shouldPublish: boolean) => {
+  // Tạo bản nháp trước để ảnh có recipeId hợp lệ.
+  const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
       setErrorMessage(null);
@@ -126,12 +129,6 @@ export function RecipeWizard() {
 
       const filteredIngredients = ingredients.filter((i) => i.name.trim().length > 0);
       const filteredSteps = steps.filter((s) => s.description.trim().length > 0);
-
-      if (shouldPublish && filteredSteps.length === 0) {
-        setErrorMessage("Để xuất bản bài viết, bắt buộc phải có ít nhất 1 bước thực hiện.");
-        setIsSubmitting(false);
-        return;
-      }
 
       const payload: CreateRecipeRequest = {
         title: title.trim(),
@@ -146,13 +143,8 @@ export function RecipeWizard() {
       };
 
       const result = await createRecipe(payload);
-
-      if (shouldPublish) {
-        await publishRecipe(result.id);
-      }
-
-      router.push("/dashboard/recipes");
-      router.refresh();
+      setCreatedRecipeId(result.id);
+      setCurrentStep(5);
     } catch (err: unknown) {
       if (err instanceof ApiError && err.problem) {
         const pd = err.problem;
@@ -172,6 +164,23 @@ export function RecipeWizard() {
     }
   };
 
+  const finishRecipe = async (shouldPublish: boolean) => {
+    if (!createdRecipeId || imagesPending) return;
+    try {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+      if (shouldPublish) await publishRecipe(createdRecipeId);
+      router.push("/dashboard/recipes");
+      router.refresh();
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof ApiError
+        ? err.problem.detail ?? "Không thể xuất bản công thức. Bản nháp vẫn được lưu."
+        : "Không thể hoàn tất công thức. Bản nháp vẫn được lưu.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       {/* Step Indicator Header */}
@@ -184,12 +193,13 @@ export function RecipeWizard() {
         </p>
 
         {/* Stepper Bar */}
-        <div className="mt-6 grid grid-cols-4 gap-2 border-b border-zinc-200 pb-4 dark:border-zinc-800">
+        <div className="mt-6 grid grid-cols-5 gap-2 border-b border-zinc-200 pb-4 dark:border-zinc-800">
           {[
             { step: 1, label: "1. Thông tin" },
             { step: 2, label: "2. Nguyên liệu" },
             { step: 3, label: "3. Các bước" },
             { step: 4, label: "4. Hoàn tất" },
+            { step: 5, label: "5. Ảnh" },
           ].map((item) => (
             <div
               key={item.step}
@@ -525,11 +535,11 @@ export function RecipeWizard() {
         </div>
       )}
 
-      {/* BƯỚC 4: XÁC NHẬN & LƯU BÀI */}
+      {/* BƯỚC 4: XÁC NHẬN & TẠO BẢN NHÁP */}
       {currentStep === 4 && (
         <div className="space-y-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Xem lại và Lưu công thức
+            Xem lại và tạo công thức
           </h2>
 
           <div className="rounded-lg bg-zinc-50 p-4 space-y-3 dark:bg-zinc-800/50 text-sm">
@@ -552,14 +562,23 @@ export function RecipeWizard() {
           </div>
 
           <div className="rounded-lg border border-emerald-500/30 bg-emerald-50/50 p-4 text-xs text-emerald-800 dark:bg-emerald-950/20 dark:text-emerald-300">
-            💡 Lưu ý: Bạn có thể chọn <strong>Lưu nháp</strong> để chỉnh sửa thêm sau này, hoặc <strong>Xuất bản ngay</strong> để hiển thị công khai tới độc giả.
+            Công thức sẽ được lưu nháp trước. Ở bước tiếp theo, bạn có thể thêm ảnh rồi lưu nháp hoặc xuất bản.
           </div>
+        </div>
+      )}
+
+      {currentStep === 5 && createdRecipeId && (
+        <div className="space-y-5 rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Ảnh là tùy chọn. Hãy đợi các ảnh đang tải hoàn tất trước khi rời bước này.
+          </p>
+          <RecipeImageManager recipeId={createdRecipeId} onPendingChange={setImagesPending} />
         </div>
       )}
 
       {/* Nút điều hướng Wizard */}
       <div className="flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-800">
-        {currentStep > 1 ? (
+        {currentStep > 1 && currentStep < 5 ? (
           <button
             type="button"
             onClick={prevStep}
@@ -579,20 +598,29 @@ export function RecipeWizard() {
             >
               Tiếp tục →
             </button>
+          ) : currentStep === 4 ? (
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => void handleSubmit()}
+              className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-emerald-500 disabled:opacity-50"
+            >
+              {isSubmitting ? "Đang tạo..." : "Tạo công thức và tiếp tục"}
+            </button>
           ) : (
             <>
               <button
                 type="button"
-                disabled={isSubmitting}
-                onClick={() => handleSubmit(false)}
+                disabled={isSubmitting || imagesPending}
+                onClick={() => void finishRecipe(false)}
                 className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
-                {isSubmitting ? "Đang lưu..." : "Lưu dạng bản nháp"}
+                Lưu dạng bản nháp
               </button>
               <button
                 type="button"
-                disabled={isSubmitting}
-                onClick={() => handleSubmit(true)}
+                disabled={isSubmitting || imagesPending}
+                onClick={() => void finishRecipe(true)}
                 className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-emerald-500"
               >
                 {isSubmitting ? "Đang xuất bản..." : "Xuất bản ngay"}
