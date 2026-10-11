@@ -54,6 +54,8 @@ public static class DependencyInjection
         services.AddSingleton<IBackgroundJobService, HangfireBackgroundJobService>();
         services.AddTransient<IRecipeImageResizeJob, RecipeImageResizeJob>();
         services.AddTransient<IRecipeImageDeleteJob, RecipeImageDeleteJob>();
+        services.AddTransient<IRecipeImageOrphanCleanupJob, RecipeImageOrphanCleanupJob>();
+        services.AddSingleton(TimeProvider.System);
 
         services.AddHangfire(configuration => configuration
             .UseSimpleAssemblyNameTypeSerializer()
