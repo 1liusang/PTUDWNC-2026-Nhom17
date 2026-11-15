@@ -109,7 +109,7 @@ internal sealed class RecipeDataSeeder(
             .ToArray();
         var availableArtwork = new HashSet<int>();
 
-        foreach (var variant in Enumerable.Range(0, 3))
+        foreach (var variant in imageIndexes.Select(index => index / 10 % 3).Distinct())
         {
             var key = SampleImageKey(variant);
             try

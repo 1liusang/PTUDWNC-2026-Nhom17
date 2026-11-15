@@ -9,8 +9,8 @@ public sealed record DeleteRecipeStepCommand(Guid RecipeId, Guid StepId) : IRequ
 
 public sealed class DeleteRecipeStepCommandHandler(
     IAppDbContext db,
-    IRecipeAuthorizationHandler authorizationHandler,
-    ICacheInvalidator cacheInvalidator) : IRequestHandler<DeleteRecipeStepCommand>
+    ICacheInvalidator cache,
+    IRecipeAuthorizationHandler authorizationHandler) : IRequestHandler<DeleteRecipeStepCommand>
 {
     public async Task Handle(DeleteRecipeStepCommand request, CancellationToken cancellationToken)
     {
@@ -52,8 +52,6 @@ public sealed class DeleteRecipeStepCommandHandler(
         recipe.UpdatedAt = DateTimeOffset.UtcNow;
 
         await db.SaveChangesAsync(cancellationToken);
-
-        // 2.20 & S-07: Invalidate cache cho recipe
-        await cacheInvalidator.InvalidateAsync(["recipes", $"recipe:{recipe.Id}"], cancellationToken);
+        await cache.InvalidateAsync(["recipes", $"recipe:{recipe.Id}", "categories"], cancellationToken);
     }
 }

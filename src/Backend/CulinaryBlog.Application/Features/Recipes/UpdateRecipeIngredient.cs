@@ -27,8 +27,8 @@ public sealed class UpdateRecipeIngredientCommandValidator : AbstractValidator<U
 
 public sealed class UpdateRecipeIngredientCommandHandler(
     IAppDbContext db,
-    IRecipeAuthorizationHandler authorizationHandler,
-    ICacheInvalidator cacheInvalidator) : IRequestHandler<UpdateRecipeIngredientCommand>
+    ICacheInvalidator cache,
+    IRecipeAuthorizationHandler authorizationHandler) : IRequestHandler<UpdateRecipeIngredientCommand>
 {
     public async Task Handle(UpdateRecipeIngredientCommand request, CancellationToken cancellationToken)
     {
@@ -52,8 +52,6 @@ public sealed class UpdateRecipeIngredientCommandHandler(
         recipe.UpdatedAt = DateTimeOffset.UtcNow;
 
         await db.SaveChangesAsync(cancellationToken);
-
-        // 2.20 & S-07: Invalidate cache cho recipe
-        await cacheInvalidator.InvalidateAsync(["recipes", $"recipe:{recipe.Id}"], cancellationToken);
+        await cache.InvalidateAsync(["recipes", $"recipe:{recipe.Id}", "categories"], cancellationToken);
     }
 }

@@ -29,14 +29,9 @@ export function UserMenu() {
   return (
     <div className="flex items-center gap-3">
       {session.user.roles.includes("Admin") && (
-        <>
-          <Link href="/dashboard/categories" className="hover:underline">
-            Quản lý danh mục
-          </Link>
-          <Link href={ADMIN_USERS_PATH} className="hover:underline">
-            Quản trị
-          </Link>
-        </>
+        <Link href="/dashboard/categories" className="hover:underline">
+          Quản lý danh mục
+        </Link>
       )}
       <Link href={PROFILE_PATH} className="font-medium hover:underline">
         {session.user.fullName}

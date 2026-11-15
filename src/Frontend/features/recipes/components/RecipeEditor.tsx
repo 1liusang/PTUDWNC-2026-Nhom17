@@ -46,13 +46,9 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
   const [newStepDesc, setNewStepDesc] = useState("");
   const [newStepDuration, setNewStepDuration] = useState<string>("");
 
-  // Drag and drop state cho các bước (Task 2.22)
-  const [draggedStepIdx, setDraggedStepIdx] = useState<number | null>(null);
-  const [dragOverStepIdx, setDragOverStepIdx] = useState<number | null>(null);
-
-  const loadRecipe = useCallback(async (showLoading = false) => {
+  const loadRecipe = useCallback(async () => {
     try {
-      if (showLoading) setIsLoading(true);
+      setIsLoading(true);
       setErrorMessage(null);
       setConcurrencyConflict(false);
       const data = await getRecipeById(recipeId);
@@ -67,7 +63,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
     } catch (err: unknown) {
       setErrorMessage((err as Error).message || "Không thể tải thông tin công thức.");
     } finally {
-      if (showLoading) setIsLoading(false);
+      setIsLoading(false);
     }
   }, [recipeId]);
 
@@ -203,63 +199,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
     }
   };
 
-  // Sắp xếp lại thứ tự các bước (Task 2.22)
-  const handleMoveStep = async (currentIndex: number, direction: -1 | 1) => {
-    if (!recipe) return;
-    const targetIndex = currentIndex + direction;
-    if (targetIndex < 0 || targetIndex >= recipe.steps.length) return;
-
-    const newSteps = [...recipe.steps];
-    const temp = newSteps[currentIndex];
-    newSteps[currentIndex] = newSteps[targetIndex];
-    newSteps[targetIndex] = temp;
-
-    const reordered = newSteps.map((s, idx) => ({ ...s, stepNumber: idx + 1 }));
-    setRecipe({
-      ...recipe,
-      steps: reordered,
-    });
-
-    try {
-      await reorderRecipeSteps(recipeId, reordered.map((s) => s.id));
-      await loadRecipe(false);
-    } catch (err: unknown) {
-      setErrorMessage((err as Error).message || "Không thể sắp xếp lại các bước.");
-      await loadRecipe(false);
-    }
-  };
-
-  // Kéo thả sắp xếp lại các bước (Task 2.22)
-  const handleDropStep = async (targetIndex: number) => {
-    if (draggedStepIdx === null || draggedStepIdx === targetIndex || !recipe) {
-      setDraggedStepIdx(null);
-      setDragOverStepIdx(null);
-      return;
-    }
-
-    const newSteps = [...recipe.steps];
-    const [draggedItem] = newSteps.splice(draggedStepIdx, 1);
-    newSteps.splice(targetIndex, 0, draggedItem);
-
-    // Cập nhật tạm thời để UI phản hồi mượt mà ngay lập tức
-    const reordered = newSteps.map((s, idx) => ({ ...s, stepNumber: idx + 1 }));
-    setRecipe({
-      ...recipe,
-      steps: reordered,
-    });
-    setDraggedStepIdx(null);
-    setDragOverStepIdx(null);
-
-    try {
-      await reorderRecipeSteps(recipeId, reordered.map((s) => s.id));
-      await loadRecipe(false);
-    } catch (err: unknown) {
-      setErrorMessage((err as Error).message || "Không thể sắp xếp lại các bước.");
-      await loadRecipe(false);
-    }
-  };
-
-  if (isLoading && !recipe) {
+  if (isLoading) {
     return (
       <div className="py-20 text-center text-sm text-zinc-500">
         Đang tải dữ liệu công thức...
@@ -310,7 +250,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
             </div>
             <button
               type="button"
-              onClick={() => void loadRecipe(true)}
+              onClick={loadRecipe}
               className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-rose-500"
             >
               🔄 Tải lại dữ liệu mới nhất
@@ -477,99 +417,27 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
 
       {/* PHẦN 3: CÁC BƯỚC THỰC HIỆN */}
       <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
-        <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            Các bước thực hiện
-          </h2>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            💡 Bạn có thể kéo thả biểu tượng <span className="font-bold">⠿</span> hoặc dùng nút ↑ ↓ để thay đổi thứ tự các bước.
-          </p>
-        </div>
+        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          Các bước thực hiện
+        </h2>
 
         {/* Danh sách các bước */}
         <div className="space-y-3">
-          {recipe.steps.map((st, index) => (
-            <div
-              key={st.id}
-              draggable
-              onDragStart={(e) => {
-                const target = e.target as HTMLElement;
-                if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "BUTTON") {
-                  e.preventDefault();
-                  return;
-                }
-                setDraggedStepIdx(index);
-                e.dataTransfer.effectAllowed = "move";
-              }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = "move";
-                if (dragOverStepIdx !== index) {
-                  setDragOverStepIdx(index);
-                }
-              }}
-              onDragLeave={() => {
-                if (dragOverStepIdx === index) {
-                  setDragOverStepIdx(null);
-                }
-              }}
-              onDrop={(e) => {
-                e.preventDefault();
-                handleDropStep(index);
-              }}
-              onDragEnd={() => {
-                setDraggedStepIdx(null);
-                setDragOverStepIdx(null);
-              }}
-              className={`rounded-lg border p-3 space-y-1 transition-all duration-150 ${
-                draggedStepIdx === index
-                  ? "opacity-40 scale-[0.98] border-dashed border-emerald-500 bg-emerald-50/20"
-                  : dragOverStepIdx === index
-                  ? "border-2 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20"
-                  : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
-              }`}
-            >
+          {recipe.steps.map((st) => (
+            <div key={st.id} className="rounded-lg border border-zinc-200 p-3 space-y-1 dark:border-zinc-800">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 select-none text-base px-0.5"
-                    title="Kéo thả để sắp xếp"
-                  >
-                    ⠿
-                  </span>
-                  <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
-                    Bước {st.stepNumber}: {st.title} {st.durationMinutes && `(${st.durationMinutes} phút)`}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    disabled={index === 0}
-                    onClick={() => handleMoveStep(index, -1)}
-                    className="rounded border border-zinc-200 px-2 py-0.5 text-xs font-bold hover:bg-zinc-100 disabled:opacity-30 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                    title="Chuyển bước lên trên"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    disabled={index === recipe.steps.length - 1}
-                    onClick={() => handleMoveStep(index, 1)}
-                    className="rounded border border-zinc-200 px-2 py-0.5 text-xs font-bold hover:bg-zinc-100 disabled:opacity-30 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                    title="Chuyển bước xuống dưới"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDeleteStep(st.id)}
-                    className="ml-2 text-xs text-rose-500 hover:text-rose-700"
-                  >
-                    Xóa bước
-                  </button>
-                </div>
+                <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                  Bước {st.stepNumber}: {st.title} {st.durationMinutes && `(${st.durationMinutes} phút)`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteStep(st.id)}
+                  className="text-xs text-rose-500 hover:text-rose-700"
+                >
+                  Xóa bước
+                </button>
               </div>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 pl-6">{st.description}</p>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">{st.description}</p>
             </div>
           ))}
         </div>

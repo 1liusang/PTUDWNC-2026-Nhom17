@@ -480,14 +480,9 @@ export function RecipeWizard() {
       {currentStep === 3 && (
         <div className="space-y-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-                Các bước thực hiện
-              </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                💡 Bạn có thể kéo thả biểu tượng <span className="font-bold">⠿</span> hoặc dùng nút ↑ ↓ để thay đổi thứ tự các bước.
-              </p>
-            </div>
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              Các bước thực hiện
+            </h2>
             <button
               type="button"
               onClick={handleAddStep}
@@ -501,56 +496,12 @@ export function RecipeWizard() {
             {steps.map((st, idx) => (
               <div
                 key={idx}
-                draggable
-                onDragStart={(e) => {
-                  const target = e.target as HTMLElement;
-                  if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "BUTTON") {
-                    e.preventDefault();
-                    return;
-                  }
-                  setDraggedStepIdx(idx);
-                  e.dataTransfer.effectAllowed = "move";
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect = "move";
-                  if (dragOverStepIdx !== idx) {
-                    setDragOverStepIdx(idx);
-                  }
-                }}
-                onDragLeave={() => {
-                  if (dragOverStepIdx === idx) {
-                    setDragOverStepIdx(null);
-                  }
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  handleDropStep(idx);
-                }}
-                onDragEnd={() => {
-                  setDraggedStepIdx(null);
-                  setDragOverStepIdx(null);
-                }}
-                className={`rounded-lg border p-4 space-y-3 transition-all duration-150 ${
-                  draggedStepIdx === idx
-                    ? "opacity-40 scale-[0.98] border-dashed border-emerald-500 bg-emerald-50/20"
-                    : dragOverStepIdx === idx
-                    ? "border-2 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20"
-                    : "border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800/40 hover:border-zinc-300 dark:hover:border-zinc-700"
-                }`}
+                className="rounded-lg border border-zinc-200 p-4 space-y-3 dark:border-zinc-800 dark:bg-zinc-800/40"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 select-none text-base px-0.5"
-                      title="Kéo thả để sắp xếp"
-                    >
-                      ⠿
-                    </span>
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400">
-                      {idx + 1}
-                    </span>
-                  </div>
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400">
+                    {idx + 1}
+                  </span>
                   <input
                     type="text"
                     placeholder="Tiêu đề bước (ví dụ: Sơ chế)"
@@ -573,35 +524,15 @@ export function RecipeWizard() {
                     }}
                     className="w-20 rounded-md border border-zinc-300 px-2.5 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
                   />
-                  <div className="flex items-center gap-1">
+                  {steps.length > 1 && (
                     <button
                       type="button"
-                      disabled={idx === 0}
-                      onClick={() => handleMoveStep(idx, -1)}
-                      className="rounded border border-zinc-200 px-2 py-1 text-xs font-bold hover:bg-zinc-100 disabled:opacity-30 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                      title="Chuyển bước lên trên"
+                      onClick={() => handleRemoveStep(idx)}
+                      className="text-xs text-rose-500 hover:text-rose-700"
                     >
-                      ↑
+                      Xóa
                     </button>
-                    <button
-                      type="button"
-                      disabled={idx === steps.length - 1}
-                      onClick={() => handleMoveStep(idx, 1)}
-                      className="rounded border border-zinc-200 px-2 py-1 text-xs font-bold hover:bg-zinc-100 disabled:opacity-30 dark:border-zinc-700 dark:hover:bg-zinc-800"
-                      title="Chuyển bước xuống dưới"
-                    >
-                      ↓
-                    </button>
-                    {steps.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveStep(idx)}
-                        className="ml-1 text-xs text-rose-500 hover:text-rose-700"
-                      >
-                        Xóa
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
 
                 <textarea
