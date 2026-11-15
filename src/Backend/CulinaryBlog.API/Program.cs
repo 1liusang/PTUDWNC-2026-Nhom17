@@ -49,6 +49,12 @@ builder.Services.AddSingleton<ICacheInvalidator, ApiOutputCacheInvalidator>();
 
 var app = builder.Build();
 
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.Services.GetRequiredService<IBackgroundJobService>().AddOrUpdateRecurring<IRecipeImageOrphanCleanupJob>(
+        "recipe-image-orphan-cleanup", job => job.ExecuteAsync(), "0 3 * * *");
+}
+
 // Ghi log request ở ngoài cùng để log đúng status sau khi exception đã được đổi thành Problem Details.
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseSerilogRequestLogging();
