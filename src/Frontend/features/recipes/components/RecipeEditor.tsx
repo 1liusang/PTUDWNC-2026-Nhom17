@@ -8,6 +8,7 @@ import {
   deleteRecipeIngredient,
   deleteRecipeStep,
   getRecipeById,
+  reorderRecipeSteps,
   updateRecipe,
 } from "../api/client";
 import type { RecipeSummary, UpdateRecipeRequest } from "../types";

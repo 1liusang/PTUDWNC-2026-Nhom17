@@ -61,7 +61,7 @@ public sealed class AddRecipeStepCommandHandler(
         recipe.UpdatedAt = DateTimeOffset.UtcNow;
 
         await db.SaveChangesAsync(cancellationToken);
-        await cache.InvalidateAsync(["recipes"], cancellationToken);
+        await cache.InvalidateAsync(["recipes", $"recipe:{recipe.Id}", "categories"], cancellationToken);
 
         return step.Id;
     }

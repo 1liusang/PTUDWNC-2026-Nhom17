@@ -35,6 +35,7 @@ public sealed class RecipeTrashTests
         Assert.NotNull(recipe.UpdatedAt);
         Assert.Contains("recipes", _cacheInvalidator.InvalidatedTags);
         Assert.Contains($"recipe:{recipe.Id}", _cacheInvalidator.InvalidatedTags);
+        Assert.Contains("categories", _cacheInvalidator.InvalidatedTags);
     }
 
     [Fact]
@@ -75,6 +76,8 @@ public sealed class RecipeTrashTests
         Assert.NotNull(recipe.UpdatedAt);
         Assert.Equal("mon-chay-ngon", recipe.Slug);
         Assert.Contains("recipes", _cacheInvalidator.InvalidatedTags);
+        Assert.Contains($"recipe:{recipe.Id}", _cacheInvalidator.InvalidatedTags);
+        Assert.Contains("categories", _cacheInvalidator.InvalidatedTags);
     }
 
     [Fact]

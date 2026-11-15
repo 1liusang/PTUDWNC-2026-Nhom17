@@ -41,6 +41,8 @@ export function RecipeWizard() {
   const [steps, setSteps] = useState<CreateRecipeStepDto[]>([
     { title: "Bước 1", description: "", durationMinutes: 10 },
   ]);
+  const [draggedStepIdx, setDraggedStepIdx] = useState<number | null>(null);
+  const [dragOverStepIdx, setDragOverStepIdx] = useState<number | null>(null);
 
   // Điều hướng wizard
   const nextStep = () => {
@@ -115,6 +117,31 @@ export function RecipeWizard() {
     if (steps.length > 1) {
       setSteps(steps.filter((_, i) => i !== index));
     }
+  };
+
+  const handleMoveStep = (currentIndex: number, direction: -1 | 1) => {
+    const targetIndex = currentIndex + direction;
+    if (targetIndex < 0 || targetIndex >= steps.length) return;
+    const newSteps = [...steps];
+    const temp = newSteps[currentIndex];
+    newSteps[currentIndex] = newSteps[targetIndex];
+    newSteps[targetIndex] = temp;
+    setSteps(newSteps);
+  };
+
+  const handleDropStep = (targetIndex: number) => {
+    if (draggedStepIdx === null || draggedStepIdx === targetIndex) {
+      setDraggedStepIdx(null);
+      setDragOverStepIdx(null);
+      return;
+    }
+
+    const newSteps = [...steps];
+    const [draggedItem] = newSteps.splice(draggedStepIdx, 1);
+    newSteps.splice(targetIndex, 0, draggedItem);
+    setSteps(newSteps);
+    setDraggedStepIdx(null);
+    setDragOverStepIdx(null);
   };
 
   // Submit tạo bài (Lưu nháp hoặc Xuất bản)

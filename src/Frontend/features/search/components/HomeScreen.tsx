@@ -1,4 +1,4 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
 import { ApiError, apiClient } from "@/lib/api/client";
 import type { PagedResult } from "@/lib/api/types";

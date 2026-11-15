@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { LOGIN_PATH, PROFILE_PATH, REGISTER_PATH } from "../constants";
+import { ADMIN_USERS_PATH, LOGIN_PATH, PROFILE_PATH, REGISTER_PATH } from "../constants";
 import { SignOutButton } from "./SignOutButton";
 
 // Đọc phiên ở phía client để header không làm mọi trang phải render động.

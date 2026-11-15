@@ -60,7 +60,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
-    app.UseHangfireDashboard("/hangfire");
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = [new AllowAllDashboardAuthorizationFilter()]
+    });
 }
 else
 {
@@ -74,6 +77,16 @@ app.MapHealthChecks("/health/live");
 app.MapHealthChecks("/health/ready");
 app.MapEndpointModules();
 
+// Task 2.21: Lập lịch recurring job dọn dẹp thùng rác công thức hằng ngày (S-03)
+var backgroundJobs = app.Services.GetService<CulinaryBlog.Application.Abstractions.IBackgroundJobService>();
+if (backgroundJobs is not null)
+{
+    backgroundJobs.AddOrUpdateRecurring<CulinaryBlog.Application.Features.Recipes.RecipeTrashCleanupJob>(
+        "recipe-trash-cleanup",
+        job => job.ExecuteAsync(CancellationToken.None),
+        Cron.Daily());
+}
+
 app.Run();
 
 internal sealed class ApiOutputCacheInvalidator(IOutputCacheStore outputCacheStore) : ICacheInvalidator
@@ -83,4 +96,9 @@ internal sealed class ApiOutputCacheInvalidator(IOutputCacheStore outputCacheSto
         foreach (var tag in tags.Distinct(StringComparer.Ordinal))
             await outputCacheStore.EvictByTagAsync(tag, cancellationToken);
     }
+}
+
+sealed class AllowAllDashboardAuthorizationFilter : Hangfire.Dashboard.IDashboardAuthorizationFilter
+{
+    public bool Authorize(Hangfire.Dashboard.DashboardContext context) => true;
 }
