@@ -4,12 +4,11 @@ import type { PagedResult } from "@/lib/api/types";
 import { getCategories } from "@/features/categories/api/public-client";
 import { siteUrl } from "@/features/search/seo/metadata";
 
-export const dynamic = "force-dynamic";
-const revalidate = 3600;
+export const revalidate = 3600;
 
 type PublishedRecipe = {
   slug: string;
-  status?: string | number;
+  status: string | number;
   publishedAt?: string | null;
   updatedAt?: string | null;
 };
@@ -30,17 +29,18 @@ async function getPublishedRecipes(): Promise<PublishedRecipe[]> {
     recipes.push(...result.items);
   }
 
-  return recipes.filter((recipe) =>
-    recipe.status === undefined || recipe.status === 1 || recipe.status === "Published",
-  );
+  return recipes.filter((recipe) => recipe.status === 1 || recipe.status === "Published");
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const generatedAt = new Date();
-  const [recipes, categories] = await Promise.all([
+  const [recipeResult, categoryResult] = await Promise.allSettled([
     getPublishedRecipes(),
     getCategories({ accessToken: null, next: { revalidate } }),
   ]);
+  // Keep the sitemap buildable when the API is temporarily unavailable; ISR retries later.
+  const recipes = recipeResult.status === "fulfilled" ? recipeResult.value : [];
+  const categories = categoryResult.status === "fulfilled" ? categoryResult.value : [];
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: siteUrl, lastModified: generatedAt, changeFrequency: "weekly", priority: 1 },

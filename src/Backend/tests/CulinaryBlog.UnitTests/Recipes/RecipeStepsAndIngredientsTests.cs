@@ -321,11 +321,7 @@ public sealed class RecipeStepsAndIngredientsTests
         Assert.Contains($"recipe:{recipe.Id}", _cacheInvalidator.InvalidatedTags);
     }
 
-    private sealed class TestCache : ICacheInvalidator
-    {
-        public static TestCache Instance { get; } = new();
-        public Task InvalidateAsync(IEnumerable<string> tags, CancellationToken cancellationToken = default) => Task.CompletedTask;
-    }
+
 
     private sealed class FakeAppDbContext(
         IEnumerable<Recipe>? recipes = null,

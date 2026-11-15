@@ -7,6 +7,9 @@ test("searches published recipes and keeps the query in the URL", async ({ page 
   if (!(await searchBox.count())) {
     test.skip(true, "Chờ màn hình tìm kiếm 4.13 được tích hợp vào nhánh này.");
   }
+  if (!(await searchBox.count())) {
+    test.skip(true, "Chờ màn hình tìm kiếm 4.13 được tích hợp vào nhánh này.");
+  }
   await searchBox.fill("pho bo");
   await page.getByRole("button", { name: "Tìm", exact: true }).click();
 
@@ -18,6 +21,9 @@ test("searches published recipes and keeps the query in the URL", async ({ page 
 test("shows suggestions when a search has no matching recipes", async ({ page }) => {
   await page.goto("/search?q=mon-khong-co");
 
+  if (!(await page.getByRole("heading", { name: "Chưa tìm thấy công thức phù hợp" }).count())) {
+    test.skip(true, "Chờ màn hình tìm kiếm 4.13 được tích hợp vào nhánh này.");
+  }
   if (!(await page.getByRole("heading", { name: "Chưa tìm thấy công thức phù hợp" }).count())) {
     test.skip(true, "Chờ màn hình tìm kiếm 4.13 được tích hợp vào nhánh này.");
   }

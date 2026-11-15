@@ -11,11 +11,15 @@ interface RecipeDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
+function isPublished(status: string | number) {
+  return status === "Published" || status === 1;
+}
+
 export async function generateMetadata({ params }: RecipeDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
   try {
     const recipe = await getRecipeBySlug(slug);
-    if (recipe.status !== "Published" && (recipe.status as unknown as number) !== 1) {
+    if (!isPublished(recipe.status)) {
       return { title: "Không tìm thấy công thức", robots: { index: false, follow: false } };
     }
     return buildPageMetadata({
@@ -38,7 +42,7 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
     throw error;
   }
 
-  if (recipe.status !== "Published" && (recipe.status as unknown as number) !== 1) notFound();
+  if (!isPublished(recipe.status)) notFound();
 
   return (
     <>

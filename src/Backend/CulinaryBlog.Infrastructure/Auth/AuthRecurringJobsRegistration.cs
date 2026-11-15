@@ -13,8 +13,8 @@ internal sealed class AuthRecurringJobsRegistration(
 {
     public const string RefreshTokenCleanupJobId = "auth-refresh-token-cleanup";
 
-    // Hằng ngày lúc 03:00 UTC (10:00 giờ Việt Nam), ngoài giờ cao điểm.
-    private const string DailyAt3AmUtc = "0 3 * * *";
+    // Theo ADR-014: dọn refresh token hết hạn lúc 01:00 UTC mỗi ngày.
+    private const string DailyAt1AmUtc = "0 1 * * *";
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -28,7 +28,7 @@ internal sealed class AuthRecurringJobsRegistration(
             jobs.AddOrUpdateRecurring<RefreshTokenCleanupJob>(
                 RefreshTokenCleanupJobId,
                 job => job.ExecuteAsync(CancellationToken.None),
-                DailyAt3AmUtc);
+                DailyAt1AmUtc);
         }
         catch (Exception exception)
         {
