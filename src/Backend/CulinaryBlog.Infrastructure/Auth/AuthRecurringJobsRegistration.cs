@@ -1,4 +1,5 @@
 using CulinaryBlog.Application.Abstractions;
+using CulinaryBlog.Application.Features.Auth.LoginHistory;
 using CulinaryBlog.Application.Features.Auth.RefreshTokenCleanup;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,9 +13,12 @@ internal sealed class AuthRecurringJobsRegistration(
     IBackgroundJobService? jobs = null) : IHostedService
 {
     public const string RefreshTokenCleanupJobId = "auth-refresh-token-cleanup";
+    public const string LoginAttemptCleanupJobId = "auth-login-attempt-cleanup";
 
     // Theo ADR-014: dọn refresh token hết hạn lúc 01:00 UTC mỗi ngày.
     private const string DailyAt1AmUtc = "0 1 * * *";
+    // Chạy sau các job dọn dẹp chính, theo FR-AUTH-011.
+    private const string DailyAt3AmUtc = "0 3 * * *";
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
@@ -23,20 +27,29 @@ internal sealed class AuthRecurringJobsRegistration(
             return Task.CompletedTask;
         }
 
+        Register(RefreshTokenCleanupJobId, () => jobs.AddOrUpdateRecurring<RefreshTokenCleanupJob>(
+            RefreshTokenCleanupJobId,
+            job => job.ExecuteAsync(CancellationToken.None),
+            DailyAt1AmUtc));
+        Register(LoginAttemptCleanupJobId, () => jobs.AddOrUpdateRecurring<LoginAttemptCleanupJob>(
+            LoginAttemptCleanupJobId,
+            job => job.ExecuteAsync(CancellationToken.None),
+            DailyAt3AmUtc));
+
+        return Task.CompletedTask;
+    }
+
+    private void Register(string jobId, Action register)
+    {
         try
         {
-            jobs.AddOrUpdateRecurring<RefreshTokenCleanupJob>(
-                RefreshTokenCleanupJobId,
-                job => job.ExecuteAsync(CancellationToken.None),
-                DailyAt1AmUtc);
+            register();
         }
         catch (Exception exception)
         {
             // Giống DatabaseInitializer: DB chưa chạy thì chỉ ghi log, API vẫn lên.
-            logger.LogError(exception, "Could not register recurring job {JobId}", RefreshTokenCleanupJobId);
+            logger.LogError(exception, "Could not register recurring job {JobId}", jobId);
         }
-
-        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
