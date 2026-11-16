@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-const baseURL = "http://127.0.0.1:3100";
+const baseURL = "http://127.0.0.1:3000";
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -22,8 +22,13 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
+<<<<<<< HEAD
       command: "node node_modules/next/dist/bin/next dev --hostname 127.0.0.1 --port 3100",
       url: `${baseURL}/robots.txt`,
+=======
+      command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
+      url: baseURL,
+>>>>>>> da0a4a211ab920f98d12313e75d414fb7b9ab35a
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       stdout: "pipe",

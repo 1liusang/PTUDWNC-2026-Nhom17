@@ -39,6 +39,6 @@ public sealed class UnpublishRecipeCommandHandler(
         recipe.UpdatedAt = DateTimeOffset.UtcNow;
 
         await db.SaveChangesAsync(cancellationToken);
-        await cache.InvalidateAsync(["recipes"], cancellationToken);
+        await cache.InvalidateAsync(["recipes", $"recipe:{recipe.Id}", "categories"], cancellationToken);
     }
 }

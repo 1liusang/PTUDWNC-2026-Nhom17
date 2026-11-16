@@ -59,7 +59,7 @@ public sealed class AddRecipeIngredientCommandHandler(
         recipe.UpdatedAt = DateTimeOffset.UtcNow;
 
         await db.SaveChangesAsync(cancellationToken);
-        await cache.InvalidateAsync(["recipes"], cancellationToken);
+        await cache.InvalidateAsync(["recipes", $"recipe:{recipe.Id}", "categories"], cancellationToken);
 
         return ingredient.Id;
     }

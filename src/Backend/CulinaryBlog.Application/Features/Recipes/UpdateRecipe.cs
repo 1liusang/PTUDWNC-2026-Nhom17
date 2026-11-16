@@ -118,6 +118,6 @@ public sealed class UpdateRecipeCommandHandler(
         db.SetOriginalVersion(recipe, request.Version);
 
         await db.SaveChangesAsync(cancellationToken);
-        await cache.InvalidateAsync(["recipes"], cancellationToken);
+        await cache.InvalidateAsync(["recipes", $"recipe:{recipe.Id}", "categories"], cancellationToken);
     }
 }

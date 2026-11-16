@@ -1,16 +1,13 @@
 .screen {
-  --foreground: #171717;
-  --color-leaf: #176b4b;
-  --color-leaf-dark: #12583d;
-  --color-tomato: #be123c;
-  --color-tomato-dark: #9f1239;
-  --muted: #52525b;
-  --surface-green: #ecfdf5;
-  --surface-red: #fff1f2;
-  color: #171717;
-  border-radius: 1rem;
-  background: #ffffff;
-  padding: 1.5rem;
+  --foreground: #f4f4f5;
+  --color-leaf: #6ee7b7;
+  --color-leaf-dark: #34d399;
+  --color-tomato: #fb7185;
+  --color-tomato-dark: #f43f5e;
+  --muted: #a1a1aa;
+  --surface-green: #18181b;
+  --surface-red: #4c0519;
+  color: var(--foreground);
 }
 
 .recipeCard {
@@ -63,7 +60,7 @@
 .featureMedia {
   position: relative;
   overflow: hidden;
-  background: #f4f4f5;
+  background: var(--surface-green);
   aspect-ratio: 4 / 3;
 }
 
@@ -98,7 +95,7 @@
   place-items: center;
   border: 1px solid rgb(46 101 75 / 45%);
   border-radius: 50%;
-  font-family: Georgia, serif;
+  font-family: var(--font-lora), serif;
   font-size: 13px;
   font-weight: 700;
 }
@@ -111,8 +108,8 @@
   display: flex;
   min-height: 48px;
   width: 100%;
-  border: 1px solid rgb(0 0 0 / 16%);
-  background: #ffffff;
+  border: 1px solid rgb(255 255 255 / 20%);
+  background: #18181b;
 }
 
 .recipeSearchForm:focus-within {
@@ -127,13 +124,13 @@
   border: 0;
   background: transparent;
   padding: 0 14px;
-  color: #171717;
+  color: #f4f4f5;
   font-size: 14px;
   outline: 0;
 }
 
 .recipeSearchForm input::placeholder {
-  color: #71717a;
+  color: #a1a1aa;
   opacity: 1;
 }
 
@@ -177,7 +174,7 @@
 
 .loadingMedia {
   aspect-ratio: 4 / 3;
-  background: linear-gradient(100deg, #f4f4f5 20%, #e4e4e7 38%, #f4f4f5 58%);
+  background: linear-gradient(100deg, #18181b 20%, #27272a 38%, #18181b 58%);
   background-size: 200% 100%;
   animation: shimmer 1.3s ease-in-out infinite;
 }
@@ -185,14 +182,14 @@
 .loadingLine {
   height: 12px;
   margin-top: 14px;
-  background: #e4e4e7;
+  background: #27272a;
 }
 
 .loadingLineShort {
   width: 62%;
   height: 10px;
   margin-top: 10px;
-  background: #e4e4e7;
+  background: #27272a;
 }
 
 @keyframes shimmer {
@@ -223,5 +220,70 @@
 @media (min-width: 1200px) {
   .recipeGridLoading {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1600px) {
+  .recipeGrid,
+  .recipeGridLoading {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .categoryGrid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 2200px) {
+  .recipeGrid,
+  .recipeGridLoading {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+/* Hiệu ứng vào trang chủ: hiện dần và trượt nhẹ lên; tắt nếu người dùng giảm chuyển động. */
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  animation: revealUp 600ms ease-out both;
+}
+
+.revealDelay1 {
+  animation-delay: 120ms;
+}
+
+.revealDelay2 {
+  animation-delay: 240ms;
+}
+
+.revealDelay3 {
+  animation-delay: 360ms;
+}
+
+.recipeGrid > * {
+  animation: revealUp 500ms ease-out both;
+}
+
+.recipeGrid > *:nth-child(1) { animation-delay: 300ms; }
+.recipeGrid > *:nth-child(2) { animation-delay: 380ms; }
+.recipeGrid > *:nth-child(3) { animation-delay: 460ms; }
+.recipeGrid > *:nth-child(4) { animation-delay: 540ms; }
+.recipeGrid > *:nth-child(5) { animation-delay: 620ms; }
+.recipeGrid > *:nth-child(6) { animation-delay: 700ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .recipeGrid > * {
+    animation: none;
   }
 }
