@@ -52,6 +52,12 @@ builder.Services.AddSingleton<ICacheInvalidator, ApiOutputCacheInvalidator>();
 
 var app = builder.Build();
 
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    app.Services.GetRequiredService<IBackgroundJobService>().AddOrUpdateRecurring<IRecipeImageOrphanCleanupJob>(
+        "recipe-image-orphan-cleanup", job => job.ExecuteAsync(), "0 2 * * *");
+}
+
 // Ghi log request ở ngoài cùng để log đúng status sau khi exception đã được đổi thành Problem Details.
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseSerilogRequestLogging();
@@ -63,7 +69,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
-    app.UseHangfireDashboard("/hangfire");
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = [new AllowAllDashboardAuthorizationFilter()]
+    });
 }
 else
 {
@@ -80,6 +89,16 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 });
 app.MapEndpointModules();
 
+// Task 2.21: Lập lịch recurring job dọn dẹp thùng rác công thức hằng ngày (S-03)
+var backgroundJobs = app.Services.GetService<CulinaryBlog.Application.Abstractions.IBackgroundJobService>();
+if (backgroundJobs is not null)
+{
+    backgroundJobs.AddOrUpdateRecurring<CulinaryBlog.Application.Features.Recipes.RecipeTrashCleanupJob>(
+        "recipe-trash-cleanup",
+        job => job.ExecuteAsync(CancellationToken.None),
+        Cron.Daily(3, 0));
+}
+
 app.Run();
 
 internal sealed class ApiOutputCacheInvalidator(IOutputCacheStore outputCacheStore) : ICacheInvalidator
@@ -89,6 +108,11 @@ internal sealed class ApiOutputCacheInvalidator(IOutputCacheStore outputCacheSto
         foreach (var tag in tags.Distinct(StringComparer.Ordinal))
             await outputCacheStore.EvictByTagAsync(tag, cancellationToken);
     }
+}
+
+sealed class AllowAllDashboardAuthorizationFilter : Hangfire.Dashboard.IDashboardAuthorizationFilter
+{
+    public bool Authorize(Hangfire.Dashboard.DashboardContext context) => true;
 }
 
 internal sealed class DatabaseHealthCheck(AppDbContext dbContext) : Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck

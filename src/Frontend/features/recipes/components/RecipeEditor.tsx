@@ -8,10 +8,12 @@ import {
   deleteRecipeIngredient,
   deleteRecipeStep,
   getRecipeById,
+  reorderRecipeSteps,
   updateRecipe,
 } from "../api/client";
 import type { RecipeSummary, UpdateRecipeRequest } from "../types";
 import { ApiError } from "@/lib/api/client";
+import { RecipeImageManager } from "@/features/images/components/RecipeImageManager";
 
 interface RecipeEditorProps {
   recipeId: string;
@@ -200,7 +202,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
 
   if (isLoading) {
     return (
-      <div className="py-20 text-center text-sm text-zinc-500">
+      <div className="py-20 text-center text-sm text-zinc-500 dark:text-zinc-400">
         Đang tải dữ liệu công thức...
       </div>
     );
@@ -215,7 +217,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -229,7 +231,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
           <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
             Chỉnh sửa công thức
           </h1>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
             Phiên bản (Version): {version} | Slug: /{recipe.slug}
           </p>
         </div>
@@ -443,7 +445,7 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
 
         {/* Thêm bước mới */}
         <div className="rounded-lg border border-dashed border-zinc-300 p-3 space-y-2 dark:border-zinc-700">
-          <span className="text-xs font-semibold text-zinc-500">Thêm bước mới</span>
+          <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Thêm bước mới</span>
           <div className="flex gap-2">
             <input
               type="text"
@@ -477,6 +479,14 @@ export function RecipeEditor({ recipeId }: RecipeEditorProps) {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Quản lý Ảnh công thức (TV3 component) */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="mb-4 text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          Hình ảnh công thức
+        </h2>
+        <RecipeImageManager recipeId={recipeId} />
       </div>
     </div>
   );

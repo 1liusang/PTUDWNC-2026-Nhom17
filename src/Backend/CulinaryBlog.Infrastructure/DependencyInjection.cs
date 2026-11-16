@@ -1,4 +1,4 @@
-﻿using CulinaryBlog.Application.Abstractions;
+using CulinaryBlog.Application.Abstractions;
 using CulinaryBlog.Application.Features.RecipeSearch;
 using CulinaryBlog.Infrastructure.BackgroundJobs;
 using CulinaryBlog.Infrastructure.RecipeImages;
@@ -51,10 +51,13 @@ public static class DependencyInjection
 
         services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
         services.AddScoped<IEmailSender, SmtpEmailSender>();
+        services.AddSingleton(new AppLinks(configuration["Frontend:BaseUrl"] ?? "http://localhost:3000"));
 
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddTransient<IRecipeImageResizeJob, RecipeImageResizeJob>();
         services.AddTransient<IRecipeImageDeleteJob, RecipeImageDeleteJob>();
+        services.AddTransient<IRecipeImageOrphanCleanupJob, RecipeImageOrphanCleanupJob>();
+        services.AddSingleton(TimeProvider.System);
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
             services.AddSingleton<IBackgroundJobService, HangfireBackgroundJobService>();
