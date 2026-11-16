@@ -23,9 +23,10 @@ export default defineConfig({
     },
     {
       command: "node node_modules/next/dist/bin/next dev --hostname 127.0.0.1 --port 3100",
-      url: baseURL,
+      url: `${baseURL}/robots.txt`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
+      stdout: "pipe",
       env: {
         API_INTERNAL_URL: "http://127.0.0.1:5100",
         NEXT_DIST_DIR: ".next-e2e",
