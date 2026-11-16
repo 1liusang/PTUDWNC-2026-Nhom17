@@ -101,6 +101,13 @@ Backend đọc connection string trong `appsettings.Development.json`, khớp s�
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=CulinaryBlogDb;Username=postgres;Password=<mật khẩu>" --project CulinaryBlog.API
 ```
 
+Seeder tạo 50 công thức mẫu tiếng Việt mặc định, kèm nguyên liệu, các bước, dinh dưỡng và ảnh minh họa. Để tăng dữ liệu cho k6, đặt `Seed__Recipes__Count` trước khi chạy API (giới hạn 1–10000); ví dụ PowerShell:
+
+```powershell
+$env:Seed__Recipes__Count = "1000"
+dotnet run --project CulinaryBlog.API
+```
+
 **Frontend**
 
 ```bash
