@@ -28,6 +28,7 @@ export default defineConfig({
       timeout: 120_000,
       env: {
         API_INTERNAL_URL: "http://127.0.0.1:5100",
+        NEXT_DIST_DIR: ".next-e2e",
         NEXT_PUBLIC_SITE_URL: baseURL,
       },
     },

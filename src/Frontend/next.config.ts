@@ -4,6 +4,7 @@ import type { NextConfig } from "next";
 const apiInternalUrl = process.env.API_INTERNAL_URL ?? "http://localhost:5000";
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   output: "standalone",
   async rewrites() {
     return {
