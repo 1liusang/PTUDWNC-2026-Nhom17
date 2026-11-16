@@ -41,7 +41,7 @@ export function RecipeWizard() {
 
   // B3: Các bước thực hiện
   const [steps, setSteps] = useState<CreateRecipeStepDto[]>([
-    { title: "Bước 1", description: "", durationMinutes: 10 },
+    { title: "", description: "", durationMinutes: 10 },
   ]);
   const [draggedStepIdx, setDraggedStepIdx] = useState<number | null>(null);
   const [dragOverStepIdx, setDragOverStepIdx] = useState<number | null>(null);
@@ -111,7 +111,7 @@ export function RecipeWizard() {
   const handleAddStep = () => {
     setSteps([
       ...steps,
-      { title: `Bước ${steps.length + 1}`, description: "", durationMinutes: 10 },
+      { title: "", description: "", durationMinutes: 10 },
     ]);
   };
 
@@ -151,7 +151,12 @@ export function RecipeWizard() {
     setErrorMessage(null);
     setFieldErrors({});
 
-    const filteredSteps = steps.filter((s) => s.description.trim().length > 0);
+    const filteredSteps = steps
+      .filter((s) => s.description.trim().length > 0)
+      .map((s, idx) => ({
+        ...s,
+        title: (s.title || "").trim() || `Bước ${idx + 1}`,
+      }));
     if (filteredSteps.length === 0) {
       setErrorMessage("Vui lòng thêm ít nhất 1 bước thực hiện trước khi sang bước tiếp theo.");
       return;
@@ -201,7 +206,12 @@ export function RecipeWizard() {
       if (!targetId) {
         // Nếu chưa có ID thì tạo bài mới
         const filteredIngredients = ingredients.filter((i) => i.name.trim().length > 0);
-        const filteredSteps = steps.filter((s) => s.description.trim().length > 0);
+        const filteredSteps = steps
+      .filter((s) => s.description.trim().length > 0)
+      .map((s, idx) => ({
+        ...s,
+        title: (s.title || "").trim() || `Bước ${idx + 1}`,
+      }));
 
         if (shouldPublish && filteredSteps.length === 0) {
           setErrorMessage("Để xuất bản bài viết, bắt buộc phải có ít nhất 1 bước thực hiện.");
@@ -393,7 +403,7 @@ export function RecipeWizard() {
 
             {/* Dinh dưỡng tùy chọn */}
             <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
-              <span className="block text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
+              <span className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">
                 Giá trị dinh dưỡng (Tùy chọn)
               </span>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -534,9 +544,14 @@ export function RecipeWizard() {
       {currentStep === 3 && (
         <div className="space-y-6 rounded-xl border border-zinc-200 bg-white p-6 shadow-xs dark:border-zinc-800 dark:bg-zinc-900">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              Các bước thực hiện
-            </h2>
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                Các bước thực hiện
+              </h2>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                💡 Bạn có thể kéo thả biểu tượng <span className="font-bold">⠿</span> hoặc dùng nút ↑ ↓ để thay đổi thứ tự các bước.
+              </p>
+            </div>
             <button
               type="button"
               onClick={handleAddStep}
@@ -550,12 +565,56 @@ export function RecipeWizard() {
             {steps.map((st, idx) => (
               <div
                 key={idx}
-                className="rounded-lg border border-zinc-200 p-4 space-y-3 dark:border-zinc-800 dark:bg-zinc-800/40"
+                draggable
+                onDragStart={(e) => {
+                  const target = e.target as HTMLElement;
+                  if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "BUTTON") {
+                    e.preventDefault();
+                    return;
+                  }
+                  setDraggedStepIdx(idx);
+                  e.dataTransfer.effectAllowed = "move";
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (dragOverStepIdx !== idx) {
+                    setDragOverStepIdx(idx);
+                  }
+                }}
+                onDragLeave={() => {
+                  if (dragOverStepIdx === idx) {
+                    setDragOverStepIdx(null);
+                  }
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleDropStep(idx);
+                }}
+                onDragEnd={() => {
+                  setDraggedStepIdx(null);
+                  setDragOverStepIdx(null);
+                }}
+                className={`rounded-lg border p-4 space-y-3 transition-all duration-150 ${
+                  draggedStepIdx === idx
+                    ? "opacity-40 scale-[0.98] border-dashed border-emerald-500 bg-emerald-50/20"
+                    : dragOverStepIdx === idx
+                    ? "border-2 border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20"
+                    : "border-zinc-200 dark:border-zinc-800 dark:bg-zinc-800/40 hover:border-zinc-300 dark:hover:border-zinc-700"
+                }`}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400">
-                    {idx + 1}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="cursor-grab active:cursor-grabbing text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 select-none text-base px-0.5"
+                      title="Kéo thả để sắp xếp"
+                    >
+                      ⠿
+                    </span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400">
+                      {idx + 1}
+                    </span>
+                  </div>
                   <input
                     type="text"
                     placeholder="Tiêu đề bước (ví dụ: Sơ chế)"
@@ -578,15 +637,35 @@ export function RecipeWizard() {
                     }}
                     className="w-20 rounded-md border border-zinc-300 px-2.5 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
                   />
-                  {steps.length > 1 && (
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
-                      onClick={() => handleRemoveStep(idx)}
-                      className="text-xs text-rose-500 hover:text-rose-700"
+                      disabled={idx === 0}
+                      onClick={() => handleMoveStep(idx, -1)}
+                      className="rounded border border-zinc-200 px-2 py-1 text-xs font-bold hover:bg-zinc-100 disabled:opacity-30 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                      title="Chuyển bước lên trên"
                     >
-                      Xóa
+                      ↑
                     </button>
-                  )}
+                    <button
+                      type="button"
+                      disabled={idx === steps.length - 1}
+                      onClick={() => handleMoveStep(idx, 1)}
+                      className="rounded border border-zinc-200 px-2 py-1 text-xs font-bold hover:bg-zinc-100 disabled:opacity-30 dark:border-zinc-700 dark:hover:bg-zinc-800"
+                      title="Chuyển bước xuống dưới"
+                    >
+                      ↓
+                    </button>
+                    {steps.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveStep(idx)}
+                        className="ml-1 text-xs text-rose-500 hover:text-rose-700"
+                      >
+                        Xóa
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <textarea
