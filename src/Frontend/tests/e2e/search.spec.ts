@@ -8,7 +8,7 @@ test("searches published recipes and keeps the query in the URL", async ({ page 
   await page.getByRole("main").getByRole("button", { name: "Tìm", exact: true }).click();
 
   await expect(page).toHaveURL(/\/search\?q=pho\+bo$/);
-  await expect(page.getByText("1 kết quả cho")).toBeVisible();
+  await expect(page.getByRole("main").getByText("1 kết quả cho")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Phở bò" })).toBeVisible();
 });
 

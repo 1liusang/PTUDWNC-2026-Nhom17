@@ -3,8 +3,12 @@ import { expect, test } from "@playwright/test";
 // Việc 2.23 (TV2): E2E Playwright luồng tạo recipe -> publish -> xem trang chi tiết.
 test.describe("Luồng công thức nấu ăn (TV2 - Task 2.23)", () => {
   test("tạo công thức mới qua wizard -> xuất bản -> xem chi tiết công thức", async ({ page }) => {
-    // 1. Truy cập trang Wizard tạo công thức
+    // The dashboard is protected, so establish a session through the test API first.
     await page.goto("/dashboard/recipes/new");
+    await page.getByLabel("Email").fill("e2e@example.com");
+    await page.getByLabel("Mật khẩu").fill("E2ePassword123!");
+    await page.getByRole("button", { name: "Đăng nhập" }).click();
+    await expect(page.getByRole("heading", { name: "Tạo công thức mới" })).toBeVisible();
 
     // Bước 1: Thông tin cơ bản & dinh dưỡng
     const title = "Bún bò Huế gia truyền E2E";
@@ -29,8 +33,8 @@ test.describe("Luồng công thức nấu ăn (TV2 - Task 2.23)", () => {
       "Hầm xương bò và bắp bò cùng sả trong 2 tiếng cho ngọt nước."
     );
 
-    // Bấm Tiếp tục sang Bước 4 (Xem lại & Lưu bài)
-    await page.getByRole("button", { name: "Tiếp tục →" }).click();
+    // Chuyển sang bước ảnh và lưu bài.
+    await page.getByRole("button", { name: "Tiếp tục sang bước ảnh →" }).click();
 
     // Bước 4: Kiểm tra thông tin hiển thị lại chính xác
     await expect(page.getByText(title)).toBeVisible();
