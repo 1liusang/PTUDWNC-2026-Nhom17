@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-const baseURL = "http://127.0.0.1:3000";
+const baseURL = "http://127.0.0.1:3100";
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -23,11 +23,13 @@ export default defineConfig({
     },
     {
       command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
-      url: baseURL,
+      url: `${baseURL}/robots.txt`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
+      stdout: "pipe",
       env: {
         API_INTERNAL_URL: "http://127.0.0.1:5100",
+        NEXT_DIST_DIR: ".next-e2e",
         NEXT_PUBLIC_SITE_URL: baseURL,
       },
     },

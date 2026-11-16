@@ -8,9 +8,7 @@ Install the pinned browser once with `npx playwright install chromium`, then run
 npm run test:e2e
 ```
 
-Playwright starts a local mock API on port 5100 and the Next.js development server on port 3100. It reuses existing servers on those ports during local development. Search, sitemap, and robots tests run as required checks and fail if the corresponding route or behavior is missing.
-Playwright starts a local mock API on port 5100 and the Next.js development server on port 3100. It reuses existing servers on those ports during local development. Search, sitemap, and robots tests run as required checks and fail if the corresponding route or behavior is missing.
-
+Playwright starts a local mock API on port 5100 and the Next.js development server on port 3100, using `.next-e2e` so it does not conflict with the normal `.next` build or dev server. It checks `/robots.txt` for server readiness so startup does not depend on rendering the API-backed home page. It reuses existing servers on those ports during local development. Search, sitemap, and robots tests run as required checks and fail if the corresponding route or behavior is missing.
 ## Add a module flow
 
 - Put each flow in `tests/e2e/<module>.spec.ts` and use accessible roles and labels for selectors.

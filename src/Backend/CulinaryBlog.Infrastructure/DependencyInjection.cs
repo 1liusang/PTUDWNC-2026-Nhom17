@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddAuthInfrastructure(configuration);
         services.AddSingleton<ICacheInvalidator, NoOpCacheInvalidator>();
         services.AddScoped<IRecipeSearchRepository, RecipeSearchRepository>();
+        services.Configure<RecipeSeedOptions>(configuration.GetSection("Seed:Recipes"));
         services.AddScoped<IDataSeeder, RecipeDataSeeder>();
 
         services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
