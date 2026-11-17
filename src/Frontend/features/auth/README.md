@@ -61,7 +61,9 @@ Dùng Client ID khác (ví dụ project Google riêng): đặt `AUTH_GOOGLE_ID` 
 `dotnet user-secrets set "Authentication:Google:ClientId" "<id>" --project src/Backend/CulinaryBlog.API` — hai giá trị phải giống nhau.
 Ẩn nút Google: đặt `AUTH_GOOGLE_ID=` (rỗng) trong `.env.local`.
 
-`.env.development` chỉ được Next.js đọc khi `npm run dev`; bản build production / Docker cần truyền `AUTH_GOOGLE_ID` vào container web
-và `Authentication__Google__ClientId` vào container API.
+`.env.development` chỉ được Next.js đọc khi `npm run dev` (và `.dockerignore` bỏ qua mọi `.env*`). Với Docker, `docker-compose.yml`
+đã truyền `AUTH_GOOGLE_ID` vào container `web` (mặc định là Client ID trên; ghi đè bằng `AUTH_GOOGLE_ID` trong `.env` gốc);
+container `api` chạy `ASPNETCORE_ENVIRONMENT=Development` nên đọc Client ID từ `appsettings.Development.json`.
+Sau khi pull: `docker compose up -d --force-recreate web`.
 
 Tài khoản tạo bằng Google không có mật khẩu; muốn đăng nhập bằng email/mật khẩu thì dùng "Quên mật khẩu" để đặt.
