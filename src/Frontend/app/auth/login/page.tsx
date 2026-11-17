@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth, googleEnabled } from "@/features/auth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { LoginForm } from "@/features/auth/components/LoginForm";
-import { REGISTER_PATH } from "@/features/auth/constants";
+import { GOOGLE_SIGN_IN_ERROR, REGISTER_PATH } from "@/features/auth/constants";
 import {
   authErrorMessage,
   GOOGLE_SIGN_IN_FAILED_MESSAGE,
@@ -21,7 +21,7 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 function initialMessageFor(params: SearchParams): string | null {
   // Form dùng redirect: false nên ?error chỉ xuất hiện khi Auth.js tự chuyển hướng (Google, trình duyệt tắt JS).
-  if (params.error === "CredentialsSignin") {
+  if (params.error === "CredentialsSignin" || params.error === GOOGLE_SIGN_IN_ERROR) {
     return authErrorMessage(typeof params.code === "string" ? params.code : null);
   }
   if (params.error) {

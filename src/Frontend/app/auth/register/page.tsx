@@ -35,7 +35,16 @@ export default async function RegisterPage({ searchParams }: PageProps<"/auth/re
       }
     >
       <RegisterForm callbackUrl={callbackUrl} />
-      {googleEnabled && <GoogleSignInButton callbackUrl={callbackUrl} />}
+      {googleEnabled && (
+        <div className="mt-5 flex flex-col gap-5">
+          <div className="flex items-center gap-3 text-xs text-(color:--auth-subtle)">
+            <span className="h-px flex-1 bg-(color:--auth-border)" />
+            hoặc
+            <span className="h-px flex-1 bg-(color:--auth-border)" />
+          </div>
+          <GoogleSignInButton callbackUrl={callbackUrl} />
+        </div>
+      )}
     </AuthCard>
   );
 }

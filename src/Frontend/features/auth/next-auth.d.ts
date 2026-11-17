@@ -13,6 +13,11 @@ declare module "next-auth" {
     /** Kết quả đăng nhập từ backend, chỉ có ngay sau khi authorize() thành công. */
     backendAuth?: AuthResponse;
   }
+
+  interface Account {
+    /** Kết quả đổi id_token Google lấy phiên backend, gán trong callback signIn và dùng ngay ở jwt. */
+    backendAuth?: AuthResponse;
+  }
 }
 
 declare module "@auth/core/jwt" {

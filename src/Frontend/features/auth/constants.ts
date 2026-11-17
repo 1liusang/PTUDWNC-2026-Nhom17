@@ -8,3 +8,6 @@ export const RESET_PASSWORD_PATH = "/auth/reset-password";
 export const CONFIRM_EMAIL_PATH = "/auth/confirm-email";
 export const PROFILE_PATH = "/profile";
 export const ADMIN_USERS_PATH = "/admin/users";
+
+/** Giá trị `?error=` khi backend từ chối đăng nhập Google; `?code=` mang mã lỗi của backend. */
+export const GOOGLE_SIGN_IN_ERROR = "GoogleSignIn";

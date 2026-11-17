@@ -30,8 +30,10 @@ internal sealed class GoogleIdTokenValidator(
 
             return new GoogleIdentity(payload.Subject, payload.Email, payload.EmailVerified, payload.Name, payload.Picture);
         }
-        catch (InvalidJwtException)
+        catch (Exception exception) when (IsMalformedToken(exception))
         {
+            // Token sai chữ ký/audience/hạn dùng (InvalidJwtException) hoặc không đúng định dạng JWT
+            // (thư viện ném lỗi parse JSON/Base64) đều là token không hợp lệ, không phải lỗi máy chủ.
             throw new UnauthorizedException("The Google token is invalid.", AuthErrorCodes.GoogleTokenInvalid);
         }
         catch (HttpRequestException exception)
@@ -39,7 +41,15 @@ internal sealed class GoogleIdTokenValidator(
             logger.LogWarning(exception, "Could not reach Google to validate the id token");
             throw Unavailable();
         }
+        catch (TaskCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            logger.LogWarning(exception, "Timed out while fetching Google signing certificates");
+            throw Unavailable();
+        }
     }
+
+    private static bool IsMalformedToken(Exception exception) =>
+        exception is InvalidJwtException or Newtonsoft.Json.JsonException or FormatException or ArgumentException;
 
     private static ExternalServiceException Unavailable() =>
         new(AuthErrorCodes.GoogleUnavailable, "Google sign-in is currently unavailable.");
