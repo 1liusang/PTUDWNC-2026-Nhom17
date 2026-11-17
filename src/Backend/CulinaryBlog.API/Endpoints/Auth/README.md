@@ -51,7 +51,7 @@ Gọi `POST /api/v1/auth/login`, chép `accessToken` vào mục Authentication (
 |---|---|---|
 | `Jwt:SigningKey` | trống | ≥ 32 byte. Ở Development để trống thì API tự sinh khóa tạm (token mất hiệu lực khi khởi động lại). Production bắt buộc đặt qua biến môi trường `Jwt__SigningKey` |
 | `Jwt:AccessTokenLifetimeMinutes` | 15 | |
-| `Authentication:Google:ClientId` | trống | Để trống thì `/auth/google` trả 502. Cách tạo Client: `src/Frontend/features/auth/README.md` |
+| `Authentication:Google:ClientId` | Client ID của nhóm (Development) | Công khai, không phải secret; phải trùng `AUTH_GOOGLE_ID` của frontend. Để trống thì `/auth/google` trả 502. Xem `src/Frontend/features/auth/README.md` |
 | `RateLimiting:*PermitLimit` | 5 / 30 / 100 | Xem `AuthRateLimitOptions` |
 | `RateLimiting:TrustedProxyNetworks` | trống | CIDR của Nginx/mạng Docker để đọc `X-Forwarded-For` |
 | `Smtp:Host`, `Smtp:Port` | `localhost`, `1025` | Mặc định gửi vào Mailpit (xem ở `http://localhost:8025`) |

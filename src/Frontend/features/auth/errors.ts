@@ -31,5 +31,5 @@ export const PASSWORD_RESET_MESSAGE = "Đã đặt lại mật khẩu. Vui lòng
 export const FORGOT_PASSWORD_SENT_MESSAGE =
   "Nếu email này đã đăng ký, chúng tôi vừa gửi liên kết đặt lại mật khẩu. Liên kết có hiệu lực trong 1 ngày.";
 
-/** Lỗi chung khi Auth.js tự chuyển hướng (người dùng hủy ở Google, lỗi OAuth…). */
+/** Lỗi chung khi Google không trả id_token hoặc Auth.js tự chuyển hướng về trang đăng nhập. */
 export const GOOGLE_SIGN_IN_FAILED_MESSAGE = "Đăng nhập bằng Google thất bại. Vui lòng thử lại.";

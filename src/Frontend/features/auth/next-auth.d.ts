@@ -10,12 +10,7 @@ declare module "next-auth" {
   }
 
   interface User {
-    /** Kết quả đăng nhập từ backend, chỉ có ngay sau khi authorize() thành công. */
-    backendAuth?: AuthResponse;
-  }
-
-  interface Account {
-    /** Kết quả đổi id_token Google lấy phiên backend, gán trong callback signIn và dùng ngay ở jwt. */
+    /** Kết quả đăng nhập từ backend (mật khẩu hoặc Google), chỉ có ngay sau khi authorize() thành công. */
     backendAuth?: AuthResponse;
   }
 }

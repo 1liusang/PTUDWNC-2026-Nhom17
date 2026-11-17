@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth, googleEnabled } from "@/features/auth/auth";
+import { auth, googleClientId } from "@/features/auth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { GoogleSignInButton } from "@/features/auth/components/GoogleSignInButton";
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
@@ -35,14 +35,14 @@ export default async function RegisterPage({ searchParams }: PageProps<"/auth/re
       }
     >
       <RegisterForm callbackUrl={callbackUrl} />
-      {googleEnabled && (
+      {googleClientId && (
         <div className="mt-5 flex flex-col gap-5">
           <div className="flex items-center gap-3 text-xs text-(color:--auth-subtle)">
             <span className="h-px flex-1 bg-(color:--auth-border)" />
             hoặc
             <span className="h-px flex-1 bg-(color:--auth-border)" />
           </div>
-          <GoogleSignInButton callbackUrl={callbackUrl} />
+          <GoogleSignInButton clientId={googleClientId} callbackUrl={callbackUrl} context="signup" />
         </div>
       )}
     </AuthCard>

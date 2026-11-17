@@ -16,12 +16,12 @@ import { TextField } from "./TextField";
 
 type LoginFormProps = {
   callbackUrl: string;
-  googleEnabled: boolean;
+  googleClientId: string | null;
   initialMessage: string | null;
   initialTone?: "error" | "info";
 };
 
-export function LoginForm({ callbackUrl, googleEnabled, initialMessage, initialTone = "error" }: LoginFormProps) {
+export function LoginForm({ callbackUrl, googleClientId, initialMessage, initialTone = "error" }: LoginFormProps) {
   const router = useRouter();
   const [formError, setFormError] = useState<string | null>(initialMessage);
   const {
@@ -69,14 +69,14 @@ export function LoginForm({ callbackUrl, googleEnabled, initialMessage, initialT
         </SubmitButton>
       </form>
 
-      {googleEnabled && (
+      {googleClientId && (
         <>
           <div className="flex items-center gap-3 text-xs text-(color:--auth-subtle)">
             <span className="h-px flex-1 bg-(color:--auth-border)" />
             hoặc
             <span className="h-px flex-1 bg-(color:--auth-border)" />
           </div>
-          <GoogleSignInButton callbackUrl={callbackUrl} />
+          <GoogleSignInButton clientId={googleClientId} callbackUrl={callbackUrl} />
         </>
       )}
     </div>
