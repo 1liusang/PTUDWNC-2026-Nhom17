@@ -40,6 +40,7 @@ internal static class AuthInfrastructureRegistration
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<ILoginAttemptRepository, LoginAttemptRepository>();
         services.AddSingleton<IAccessTokenIssuer, JwtAccessTokenIssuer>();
+        services.AddSingleton<IGoogleSigningKeySource, GoogleSigningKeys>();
         services.AddSingleton<IGoogleIdTokenValidator, GoogleIdTokenValidator>();
         services.AddScoped<IDataSeeder, AuthDataSeeder>();
         services.AddHostedService<AuthRecurringJobsRegistration>();
