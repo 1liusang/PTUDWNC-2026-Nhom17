@@ -15,7 +15,9 @@ internal sealed class AuthRecurringJobsRegistration(
     public const string RefreshTokenCleanupJobId = "auth-refresh-token-cleanup";
     public const string LoginAttemptCleanupJobId = "auth-login-attempt-cleanup";
 
-    // Hằng ngày lúc 03:00 UTC (10:00 giờ Việt Nam), ngoài giờ cao điểm.
+    // Theo ADR-014: dọn refresh token hết hạn lúc 01:00 UTC mỗi ngày.
+    private const string DailyAt1AmUtc = "0 1 * * *";
+    // Chạy sau các job dọn dẹp chính, theo FR-AUTH-011.
     private const string DailyAt3AmUtc = "0 3 * * *";
 
     public Task StartAsync(CancellationToken cancellationToken)
@@ -28,7 +30,7 @@ internal sealed class AuthRecurringJobsRegistration(
         Register(RefreshTokenCleanupJobId, () => jobs.AddOrUpdateRecurring<RefreshTokenCleanupJob>(
             RefreshTokenCleanupJobId,
             job => job.ExecuteAsync(CancellationToken.None),
-            DailyAt3AmUtc));
+            DailyAt1AmUtc));
         Register(LoginAttemptCleanupJobId, () => jobs.AddOrUpdateRecurring<LoginAttemptCleanupJob>(
             LoginAttemptCleanupJobId,
             job => job.ExecuteAsync(CancellationToken.None),

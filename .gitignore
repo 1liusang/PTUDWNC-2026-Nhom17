@@ -5,6 +5,7 @@
 
 # dotenv files
 .env
+/backups/
 
 # User-specific files
 *.rsuser
@@ -485,6 +486,7 @@ $RECYCLE.BIN/
 
 # Next.js (Frontend)
 .next/
+.next-e2e/
 out/
 next-env.d.ts
 .vercel

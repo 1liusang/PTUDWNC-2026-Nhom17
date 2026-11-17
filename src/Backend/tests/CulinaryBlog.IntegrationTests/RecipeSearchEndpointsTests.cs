@@ -48,18 +48,21 @@ public sealed class RecipeSearchEndpointsTests(PostgresApiFactory factory)
         Assert.Equal(5, await sampleRecipes.Select(recipe => recipe.AuthorId).Distinct().CountAsync());
         Assert.Equal(50, await sampleRecipes.CountAsync(recipe => recipe.CategoryId.HasValue));
         var sampleRecipeIds = sampleRecipes.Select(recipe => recipe.Id);
-        Assert.Equal(5, await db.RecipeImages.CountAsync(image => sampleRecipeIds.Contains(image.RecipeId) && image.IsPrimary));
+        Assert.Equal(50, await db.RecipeImages.CountAsync(image => sampleRecipeIds.Contains(image.RecipeId) && image.IsPrimary));
         Assert.Equal(
-            await sampleRecipes.CountAsync(recipe => recipe.Status == RecipeStatus.Published),
-            await db.RecipeSteps.CountAsync(step =>
-                step.Recipe.Slug.StartsWith("sample-") && step.Recipe.Status == RecipeStatus.Published));
+            200,
+            await db.RecipeSteps.CountAsync(step => step.Recipe.Slug.StartsWith("sample-")));
+        Assert.True(await db.RecipeIngredients.CountAsync(ingredient => sampleRecipeIds.Contains(ingredient.RecipeId)) >= 300);
+        Assert.Equal(50, await sampleRecipes.CountAsync(recipe => recipe.Nutrition != null));
 
         var recipeSeeder = scope.ServiceProvider.GetServices<IDataSeeder>()
             .Single(seeder => seeder.GetType().Name == "RecipeDataSeeder");
         await recipeSeeder.SeedAsync(CancellationToken.None);
 
         Assert.Equal(50, await sampleRecipes.CountAsync());
-        Assert.Equal(5, await db.RecipeImages.CountAsync(image => sampleRecipeIds.Contains(image.RecipeId) && image.IsPrimary));
+        Assert.Equal(50, await db.RecipeImages.CountAsync(image => sampleRecipeIds.Contains(image.RecipeId) && image.IsPrimary));
+        Assert.Equal(200, await db.RecipeSteps.CountAsync(step => step.Recipe.Slug.StartsWith("sample-")));
+        Assert.True(await db.RecipeIngredients.CountAsync(ingredient => sampleRecipeIds.Contains(ingredient.RecipeId)) >= 300);
     }
 
     [Fact]

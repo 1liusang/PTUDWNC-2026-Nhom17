@@ -61,7 +61,8 @@ internal sealed class FakeUserAccountService : IUserAccountService
             account.AvatarUrl,
             IsActive: true,
             DateTimeOffset.UnixEpoch,
-            [Roles.Author]);
+            [Roles.Author],
+            EmailConfirmed: account.Password is null);
         _users[user.Id] = user;
         _passwords[user.Id] = account.Password;
         return Task.FromResult(user);
@@ -156,9 +157,10 @@ internal sealed class FakeUserAccountService : IUserAccountService
         if (avatarUrl is not null && user.AvatarUrl is null)
         {
             user = user with { AvatarUrl = avatarUrl };
-            _users[userId] = user;
         }
 
+        user = user with { EmailConfirmed = true };
+        _users[userId] = user;
         return Task.FromResult(user);
     }
 

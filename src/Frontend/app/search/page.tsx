@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SearchScreen } from "@/features/search/components/SearchScreen";
 
-export const metadata: Metadata = { title: "Tìm kiếm" };
+export const metadata: Metadata = { title: "Tìm kiếm công thức" };
 
 type SearchParams = Record<string, string | string[] | undefined>;
 

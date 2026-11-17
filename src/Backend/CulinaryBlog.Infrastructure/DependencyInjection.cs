@@ -1,4 +1,4 @@
-﻿using CulinaryBlog.Application.Abstractions;
+using CulinaryBlog.Application.Abstractions;
 using CulinaryBlog.Application.Features.RecipeSearch;
 using CulinaryBlog.Infrastructure.BackgroundJobs;
 using CulinaryBlog.Infrastructure.RecipeImages;
@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddAuthInfrastructure(configuration);
         services.AddSingleton<ICacheInvalidator, NoOpCacheInvalidator>();
         services.AddScoped<IRecipeSearchRepository, RecipeSearchRepository>();
+        services.Configure<RecipeSeedOptions>(configuration.GetSection("Seed:Recipes"));
         services.AddScoped<IDataSeeder, RecipeDataSeeder>();
 
         services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
@@ -55,6 +56,8 @@ public static class DependencyInjection
         services.AddScoped<IAppDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         services.AddTransient<IRecipeImageResizeJob, RecipeImageResizeJob>();
         services.AddTransient<IRecipeImageDeleteJob, RecipeImageDeleteJob>();
+        services.AddTransient<IRecipeImageOrphanCleanupJob, RecipeImageOrphanCleanupJob>();
+        services.AddSingleton(TimeProvider.System);
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
             services.AddSingleton<IBackgroundJobService, HangfireBackgroundJobService>();

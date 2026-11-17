@@ -5,6 +5,7 @@ const apiInternalUrl = process.env.API_INTERNAL_URL ?? "http://localhost:5000";
 const mediaInternalUrl = process.env.MEDIA_INTERNAL_URL ?? "http://localhost:9000/culinary-blog";
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   output: "standalone",
   async rewrites() {
     return {

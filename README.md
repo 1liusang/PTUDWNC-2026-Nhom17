@@ -12,6 +12,7 @@ Tài liệu nằm trong `docs/`:
 - [Kế hoạch tổng và kế hoạch từng người](./docs/KeHoach/)
 - [Ai phụ trách thư mục nào](./docs/OWNERSHIP.md)
 - [Bảng mã lỗi API](./docs/api/error-codes.md)
+- [Sao lưu và khôi phục bản demo](./docs/backup-restore.md)
 
 ## Mục lục
 
@@ -99,6 +100,13 @@ Backend đọc connection string trong `appsettings.Development.json`, khớp s�
 
 ```bash
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=CulinaryBlogDb;Username=postgres;Password=<mật khẩu>" --project CulinaryBlog.API
+```
+
+Seeder tạo 50 công thức mẫu tiếng Việt mặc định, kèm nguyên liệu, các bước, dinh dưỡng và ảnh minh họa. Để tăng dữ liệu cho k6, đặt `Seed__Recipes__Count` trước khi chạy API (giới hạn 1–10000); ví dụ PowerShell:
+
+```powershell
+$env:Seed__Recipes__Count = "1000"
+dotnet run --project CulinaryBlog.API
 ```
 
 **Frontend**
