@@ -22,8 +22,14 @@ export function SocialSharePanel({
     }
   }
 
-  const shareUrl = encodeURIComponent(new URL(path, siteUrl).toString());
-  const shareText = encodeURIComponent(`Khám phá ${title} tại Culinary Blog`);
+  const absoluteShareUrl = new URL(path, siteUrl).toString();
+  const shareMessage = `Khám phá ${title} tại Culinary Blog`;
+  const facebookUrl = new URL("https://www.facebook.com/sharer/sharer.php");
+  facebookUrl.searchParams.set("u", absoluteShareUrl);
+  facebookUrl.searchParams.set("quote", shareMessage);
+  const xUrl = new URL("https://twitter.com/intent/tweet");
+  xUrl.searchParams.set("url", absoluteShareUrl);
+  xUrl.searchParams.set("text", shareMessage);
 
   return (
     <section aria-labelledby="share-title" className="border-t border-zinc-200 pt-8 dark:border-zinc-800">
@@ -36,7 +42,7 @@ export function SocialSharePanel({
         <div className="mt-5 flex flex-wrap gap-3">
           <a
             className="inline-flex min-h-11 items-center border border-zinc-300 px-4 text-sm font-semibold hover:border-emerald-400 hover:text-emerald-400 dark:border-zinc-700"
-            href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
+            href={facebookUrl.toString()}
             target="_blank"
             rel="noreferrer"
           >
@@ -44,7 +50,7 @@ export function SocialSharePanel({
           </a>
           <a
             className="inline-flex min-h-11 items-center border border-zinc-300 px-4 text-sm font-semibold hover:border-emerald-400 hover:text-emerald-400 dark:border-zinc-700"
-            href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`}
+            href={xUrl.toString()}
             target="_blank"
             rel="noreferrer"
           >
