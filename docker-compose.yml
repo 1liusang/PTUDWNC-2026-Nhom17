@@ -87,6 +87,8 @@ services:
       AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET in .env first}
       AUTH_URL: ${AUTH_URL:?set AUTH_URL in .env first}
       AUTH_TRUST_HOST: "true"
+      # Client ID Google công khai (cùng giá trị src/Frontend/.env.development); .dockerignore bỏ qua .env* nên phải truyền ở đây.
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID:-250487519139-mdek61fole4mprvpiaepbrkq1u029nar.apps.googleusercontent.com}
       HOSTNAME: 0.0.0.0
       PORT: 3000
 

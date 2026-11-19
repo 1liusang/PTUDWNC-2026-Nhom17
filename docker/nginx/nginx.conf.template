@@ -21,7 +21,8 @@ http {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 
-    # Auth.js and cookie-authenticated API requests go through Next.js.
+    # Browser requests go through Next.js (BFF) so access tokens stay server-side.
+    # API clients with an explicit Bearer token use the ASP.NET API directly.
     location /api/auth/ { proxy_pass http://web:3000; }
     location /api/v1/ { proxy_pass http://$versioned_api_upstream; }
     location /api/ { proxy_pass http://api:8080; }
