@@ -10,7 +10,7 @@ declare module "next-auth" {
   }
 
   interface User {
-    /** Kết quả đăng nhập từ backend, chỉ có ngay sau khi authorize() thành công. */
+    /** Kết quả đăng nhập từ backend (mật khẩu hoặc Google), chỉ có ngay sau khi authorize() thành công. */
     backendAuth?: AuthResponse;
   }
 }

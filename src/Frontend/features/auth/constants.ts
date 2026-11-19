@@ -8,3 +8,6 @@ export const RESET_PASSWORD_PATH = "/auth/reset-password";
 export const CONFIRM_EMAIL_PATH = "/auth/confirm-email";
 export const PROFILE_PATH = "/profile";
 export const ADMIN_USERS_PATH = "/admin/users";
+
+/** Provider Auth.js nhận id_token từ nút Google Identity Services. */
+export const GOOGLE_PROVIDER_ID = "google-id-token";

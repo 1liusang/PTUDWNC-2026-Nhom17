@@ -16,6 +16,11 @@ public sealed class GoogleLoginCommandHandler(
 {
     public const string ProviderName = "Google";
 
+    private const int MaxUserNameAttempts = 5;
+
+    // Chừa 5 ký tự cho hậu tố số để không vượt giới hạn độ dài username.
+    private const int UserNameBaseMaxLength = AuthValidationRules.UserNameMaxLength - 5;
+
     public async Task<AuthResponse> Handle(GoogleLoginCommand request, CancellationToken cancellationToken)
     {
         var identity = await googleTokens.ValidateAsync(request.IdToken, cancellationToken);
@@ -54,9 +59,7 @@ public sealed class GoogleLoginCommandHandler(
             return await users.LinkExternalLoginAsync(existing.Id, login, identity.PictureUrl, cancellationToken);
         }
 
-        var created = await users.CreateAsync(
-            new NewUserAccount(identity.Email, FullNameOf(identity), GenerateUserNameFrom(identity.Email), Password: null, identity.PictureUrl),
-            cancellationToken);
+        var created = await CreateWithUniqueUserNameAsync(identity, cancellationToken);
 
         var linked = await users.LinkExternalLoginAsync(created.Id, login, avatarUrl: null, cancellationToken);
         jobs.Enqueue<IWelcomeEmailJob>(job => job.ExecuteAsync(created.Id, CancellationToken.None));
@@ -76,13 +79,36 @@ public sealed class GoogleLoginCommandHandler(
         return identity.Email.Split('@')[0].PadRight(AuthValidationRules.FullNameMinLength, '_');
     }
 
-    // S-05: "sinh UserName tự động" cho tài khoản tạo từ Google.
-    // ponytail: không kiểm tra trùng trước khi tạo; nếu username sinh ra đã tồn tại,
-    // CreateAsync ném AUTH_USERNAME_EXISTS và người dùng phải thử lại đăng nhập Google —
-    // thêm hậu tố ngẫu nhiên khi tần suất trùng thực tế đáng kể.
-    private static string GenerateUserNameFrom(string email)
+    private async Task<UserAccount> CreateWithUniqueUserNameAsync(GoogleIdentity identity, CancellationToken cancellationToken)
     {
-        var local = new string([.. email.Split('@')[0].Where(char.IsLetterOrDigit)]);
+        // S-05: "sinh UserName tự động" cho tài khoản tạo từ Google. Lần đầu dùng phần trước @ của email;
+        // nếu đã có người dùng thì thêm hậu tố số ngẫu nhiên và thử lại.
+        var baseName = UserNameBaseFrom(identity.Email);
+        var userName = baseName;
+        for (var attempt = 1; ; attempt++)
+        {
+            try
+            {
+                return await users.CreateAsync(
+                    new NewUserAccount(identity.Email, FullNameOf(identity), userName, Password: null, identity.PictureUrl),
+                    cancellationToken);
+            }
+            catch (ConflictException exception)
+                when (exception.Code == AuthErrorCodes.UserNameExists && attempt < MaxUserNameAttempts)
+            {
+                userName = $"{baseName}{Random.Shared.Next(1000, 100000)}";
+            }
+        }
+    }
+
+    private static string UserNameBaseFrom(string email)
+    {
+        var local = new string([.. email.Split('@')[0].Where(char.IsAsciiLetterOrDigit)]);
+        if (local.Length > UserNameBaseMaxLength)
+        {
+            local = local[..UserNameBaseMaxLength];
+        }
+
         return local.Length >= AuthValidationRules.UserNameMinLength
             ? local
             : local.PadRight(AuthValidationRules.UserNameMinLength, '0');

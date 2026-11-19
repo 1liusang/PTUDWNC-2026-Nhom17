@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth, googleEnabled } from "@/features/auth/auth";
+import { auth, googleClientId } from "@/features/auth/auth";
 import { AuthCard } from "@/features/auth/components/AuthCard";
 import { LoginForm } from "@/features/auth/components/LoginForm";
 import { REGISTER_PATH } from "@/features/auth/constants";
@@ -20,7 +20,7 @@ const EXPIRED_MESSAGE = "Phiên đăng nhập đã hết hạn. Vui lòng đăng
 type SearchParams = Record<string, string | string[] | undefined>;
 
 function initialMessageFor(params: SearchParams): string | null {
-  // Form dùng redirect: false nên ?error chỉ xuất hiện khi Auth.js tự chuyển hướng (Google, trình duyệt tắt JS).
+  // Form và nút Google dùng redirect: false nên ?error chỉ xuất hiện khi Auth.js tự chuyển hướng (trình duyệt tắt JS…).
   if (params.error === "CredentialsSignin") {
     return authErrorMessage(typeof params.code === "string" ? params.code : null);
   }
@@ -63,7 +63,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/auth/login
     >
       <LoginForm
         callbackUrl={callbackUrl}
-        googleEnabled={googleEnabled}
+        googleClientId={googleClientId}
         initialMessage={initialMessageFor(params)}
         initialTone={params.reason === "password-changed" || params.reason === "password-reset" ? "info" : "error"}
       />
