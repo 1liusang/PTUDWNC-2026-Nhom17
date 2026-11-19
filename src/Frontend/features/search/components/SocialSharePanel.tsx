@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { siteUrl } from "@/features/search/seo/metadata";
 
-export function SocialSharePanel() {
+export function SocialSharePanel({
+  path = "/",
+  title = "Culinary Blog",
+}: {
+  path?: string;
+  title?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   async function copyLink() {
@@ -16,19 +22,20 @@ export function SocialSharePanel() {
     }
   }
 
-  const shareUrl = encodeURIComponent(siteUrl);
+  const shareUrl = encodeURIComponent(new URL(path, siteUrl).toString());
+  const shareText = encodeURIComponent(`Khám phá ${title} tại Culinary Blog`);
 
   return (
-    <section aria-labelledby="share-title" className="border-t border-white/15 pt-8">
+    <section aria-labelledby="share-title" className="border-t border-zinc-200 pt-8 dark:border-zinc-800">
       <div className="max-w-2xl">
-        <p className="text-xs font-bold uppercase text-[var(--color-tomato)]">Lan tỏa món ngon</p>
-        <h2 id="share-title" className="mt-1 font-sans text-3xl font-semibold">Chia sẻ Culinary Blog</h2>
-        <p className="mt-3 text-sm leading-6 text-[var(--muted)]">
+        <p className="text-xs font-bold uppercase text-rose-400">Lan tỏa món ngon</p>
+        <h2 id="share-title" className="mt-1 font-sans text-3xl font-semibold">Chia sẻ {title}</h2>
+        <p className="mt-3 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
           Gửi những công thức yêu thích đến bạn bè và cùng nhau vào bếp.
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
           <a
-            className="inline-flex min-h-11 items-center border border-white/20 px-4 text-sm font-semibold hover:border-[var(--color-leaf)] hover:text-[var(--color-leaf)]"
+            className="inline-flex min-h-11 items-center border border-zinc-300 px-4 text-sm font-semibold hover:border-emerald-400 hover:text-emerald-400 dark:border-zinc-700"
             href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
             target="_blank"
             rel="noreferrer"
@@ -36,15 +43,15 @@ export function SocialSharePanel() {
             Facebook
           </a>
           <a
-            className="inline-flex min-h-11 items-center border border-white/20 px-4 text-sm font-semibold hover:border-[var(--color-leaf)] hover:text-[var(--color-leaf)]"
-            href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${encodeURIComponent("Khám phá công thức nấu ăn tại Culinary Blog")}`}
+            className="inline-flex min-h-11 items-center border border-zinc-300 px-4 text-sm font-semibold hover:border-emerald-400 hover:text-emerald-400 dark:border-zinc-700"
+            href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`}
             target="_blank"
             rel="noreferrer"
           >
             X
           </a>
           <button
-            className="inline-flex min-h-11 items-center border border-white/20 px-4 text-sm font-semibold hover:border-[var(--color-leaf)] hover:text-[var(--color-leaf)]"
+            className="inline-flex min-h-11 items-center border border-zinc-300 px-4 text-sm font-semibold hover:border-emerald-400 hover:text-emerald-400 dark:border-zinc-700"
             type="button"
             onClick={copyLink}
           >

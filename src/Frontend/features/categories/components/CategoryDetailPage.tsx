@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCategoryBySlug } from "../api/public-client";
 import { ApiError } from "@/lib/api/client";
+import { SocialSharePanel } from "@/features/search/components/SocialSharePanel";
 
 export async function loadCategory(slug: string, page: number) {
   try {
@@ -89,6 +90,11 @@ export async function CategoryDetailPage({ slug, page }: { slug: string; page: n
           ) : <span className="w-25" />}
         </nav>
       )}
+
+      <SocialSharePanel
+        path={pagePath(page)}
+        title={`Danh mục ${category.name}`}
+      />
     </section>
   );
 }

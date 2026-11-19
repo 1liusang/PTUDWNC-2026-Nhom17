@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getRecipeBySlug } from "@/features/recipes/api/client";
 import { RecipeDetailView } from "@/features/recipes/components/RecipeDetailView";
 import { RecipeJsonLd, buildPageMetadata } from "@/features/search/seo/metadata";
+import { SocialSharePanel } from "@/features/search/components/SocialSharePanel";
 import { ApiError } from "@/lib/api/client";
 
 export const revalidate = 300;
@@ -65,6 +66,10 @@ export default async function RecipeDetailPage({ params }: RecipeDetailPageProps
           : { calories: `${recipe.nutrition.calories} calories` },
       }} />
       <RecipeDetailView recipe={recipe} />
+      <SocialSharePanel
+        path={`/recipes/${encodeURIComponent(recipe.slug)}`}
+        title={recipe.title}
+      />
     </>
   );
 }
