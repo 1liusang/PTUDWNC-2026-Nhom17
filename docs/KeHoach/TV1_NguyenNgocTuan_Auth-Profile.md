@@ -115,7 +115,7 @@
 
 | Thứ tự | Hạng mục | Ghi chú |
 |---|---|---|
-| 1 | Đăng nhập Google (nếu 1.21 bị trễ) | Đã có thiết kế ở S-05 |
+| 1 | Đăng nhập Google (nếu 1.21 bị trễ) | ✅ 16/11: hoàn thiện 1.21 — lỗi backend hiện đúng thông báo ở trang login, username trùng tự thêm hậu tố, token sai định dạng trả 401 (trước đây 500); hướng dẫn cấu hình ở `src/Frontend/features/auth/README.md` |
 | 2 | Quên / đặt lại mật khẩu | Dùng token đặt lại mật khẩu của Identity + email qua Hangfire (tái sử dụng 1.15) |
 | 3 | Gọi API qua Route Handler proxy của Next.js | ✅ 05/11: `app/api/v1/[...path]/route.ts`; `/api/auth/session` bỏ `accessToken` |
 | 4 | Quản trị người dùng cho Admin | ✅ (FR-AUTH-010) |

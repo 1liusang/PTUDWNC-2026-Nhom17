@@ -1,8 +1,6 @@
 import NextAuth, { CredentialsSignin, type NextAuthConfig } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
-import { headers } from "next/headers";
 import { ApiError } from "@/lib/api/client";
 import {
   clientHeaders,
@@ -11,7 +9,7 @@ import {
   refreshSession,
   revokeRefreshToken,
 } from "./api/backend";
-import { LOGIN_PATH } from "./constants";
+import { GOOGLE_PROVIDER_ID, LOGIN_PATH } from "./constants";
 import { loginSchema } from "./schemas";
 import type { AuthResponse } from "./types";
 
@@ -28,7 +26,11 @@ class BackendSignInError extends CredentialsSignin {
   }
 }
 
-const googleEnabled = Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
+/**
+ * OAuth Client ID của Google (công khai, commit trong .env.development). Để trống thì ẩn nút Google.
+ * Không cần Client secret: Google Identity Services trả id_token thẳng cho trình duyệt (S-05).
+ */
+const googleClientId = process.env.AUTH_GOOGLE_ID?.trim() || null;
 
 function toToken({ accessToken, accessTokenExpiresAt, refreshToken, user }: AuthResponse): JWT {
   return {
@@ -99,19 +101,34 @@ const config: NextAuthConfig = {
         }
       },
     }),
-    ...(googleEnabled ? [Google({ authorization: { params: { scope: "openid email profile" } } })] : []),
+    // S-05: nhận id_token từ nút Google Identity Services; backend tự xác minh chữ ký, audience, email_verified.
+    Credentials({
+      id: GOOGLE_PROVIDER_ID,
+      name: "Google",
+      credentials: { idToken: {} },
+      async authorize(credentials, request) {
+        const idToken = typeof credentials?.idToken === "string" ? credentials.idToken : "";
+        if (!googleClientId || !idToken) {
+          throw new BackendSignInError(googleClientId ? "AUTH_GOOGLE_TOKEN_INVALID" : "AUTH_GOOGLE_UNAVAILABLE");
+        }
+
+        try {
+          const auth = await loginWithGoogle(idToken, clientHeaders(request.headers));
+          return {
+            id: auth.user.id,
+            email: auth.user.email,
+            name: auth.user.fullName,
+            image: auth.user.avatarUrl,
+            backendAuth: auth,
+          };
+        } catch (error) {
+          throw new BackendSignInError(error instanceof ApiError ? error.code : "SERVICE_UNAVAILABLE");
+        }
+      },
+    }),
   ],
   callbacks: {
-    async jwt({ token, user, account, trigger, session }) {
-      // S-05: đổi id_token của Google lấy token của hệ thống; lỗi thì Auth.js đưa về /auth/login?error=...
-      if (account?.provider === "google") {
-        if (!account.id_token) {
-          throw new Error("Google did not return an id_token.");
-        }
-        // Chạy trong route callback của Google nên đọc được header của trình duyệt.
-        return toToken(await loginWithGoogle(account.id_token, clientHeaders(await headers())));
-      }
-
+    async jwt({ token, user, trigger, session }) {
       if (user?.backendAuth) {
         return toToken(user.backendAuth);
       }
@@ -155,4 +172,4 @@ const config: NextAuthConfig = {
 
 export const { handlers, auth, signIn, signOut } = NextAuth(config);
 
-export { googleEnabled };
+export { googleClientId };

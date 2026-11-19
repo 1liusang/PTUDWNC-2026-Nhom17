@@ -61,6 +61,37 @@ public sealed class GoogleLoginCommandHandlerTests
         Assert.Equal("tuan", response.User.FullName);
     }
 
+    [Fact]
+    public async Task Handle_UserNameTaken_AppendsNumericSuffix()
+    {
+        await HandleAsync(new GoogleIdentity("sub-1", "tuan@example.com", EmailVerified: true, "Ngọc Tuấn", null));
+
+        var response = await HandleAsync(new GoogleIdentity("sub-2", "tuan@other.com", EmailVerified: true, "Tuấn Khác", null));
+
+        Assert.Matches("^tuan[0-9]{4,5}$", response.User.UserName);
+    }
+
+    [Fact]
+    public async Task Handle_NonAsciiOrLongEmailPrefix_GeneratesValidUserName()
+    {
+        var longLocal = new string('a', 80);
+        var response = await HandleAsync(new GoogleIdentity("sub-1", $"{longLocal}+tag@example.com", EmailVerified: true, "Ngọc Tuấn", null));
+
+        Assert.Matches("^[a-zA-Z0-9]{3,45}$", response.User.UserName);
+    }
+
+    [Fact]
+    public async Task Handle_ReturningGoogleUser_SignsInWithoutCreatingAgain()
+    {
+        var identity = new GoogleIdentity("google-sub", "back@example.com", EmailVerified: true, "Ngọc Tuấn", null);
+        var first = await HandleAsync(identity);
+
+        var second = await HandleAsync(identity);
+
+        Assert.Equal(first.User.Id, second.User.Id);
+        Assert.Single(_context.Jobs.Enqueued);
+    }
+
     private Task<Application.Features.Auth.Common.AuthResponse> HandleAsync(GoogleIdentity identity)
     {
         var handler = new GoogleLoginCommandHandler(new StubGoogleValidator(identity), _context.Users, _context.Sessions, _context.Jobs, _context.Audit);
