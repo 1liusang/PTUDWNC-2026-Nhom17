@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCategories } from "../api/public-client";
+import { SocialSharePanel } from "@/features/search/components/SocialSharePanel";
 
 export async function CategoryIndexPage() {
   const categories = await getCategories({ accessToken: null, next: { revalidate: 3600 } });
@@ -42,6 +43,7 @@ export async function CategoryIndexPage() {
           ))}
         </div>
       )}
+      <SocialSharePanel path="/categories" title="Danh mục món ăn" />
     </section>
   );
 }

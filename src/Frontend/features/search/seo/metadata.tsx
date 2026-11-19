@@ -16,29 +16,36 @@ export function buildPageMetadata({
   path,
   image,
 }: PageMetadata): Metadata {
-  const normalizedTitle = title.trim().slice(0, 60);
+  const titleSuffix = ` | ${siteName}`;
+  const normalizedTitle = title.trim().slice(0, 60 - titleSuffix.length);
+  const pageTitle = `${normalizedTitle}${titleSuffix}`;
   const normalizedDescription = description.trim().slice(0, 160);
   const canonicalPath = path.startsWith("/") ? path : `/${path}`;
-  const socialImage = image ? [image] : undefined;
+  const socialImage = {
+    url: image ?? "/opengraph-image",
+    width: 1200,
+    height: 630,
+    alt: normalizedTitle,
+  };
 
   return {
     metadataBase: new URL(siteUrl),
-    title: normalizedTitle,
+    title: { absolute: pageTitle },
     description: normalizedDescription,
     alternates: { canonical: canonicalPath },
     openGraph: {
       type: "website",
       siteName,
-      title: normalizedTitle,
+      title: pageTitle,
       description: normalizedDescription,
       url: canonicalPath,
-      images: socialImage,
+      images: [socialImage],
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
-      title: normalizedTitle,
+      card: "summary_large_image",
+      title: pageTitle,
       description: normalizedDescription,
-      images: socialImage,
+      images: [socialImage.url],
     },
   };
 }

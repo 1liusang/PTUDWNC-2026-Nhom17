@@ -4,6 +4,7 @@ import { ApiError } from "@/lib/api/client";
 import { getCategories, getRecipes } from "@/features/search/api/recipes";
 import type { RecipeCategory, RecipeSummary } from "@/features/search/api/recipes";
 import { RecipeGrid } from "./RecipeGrid";
+import { SocialSharePanel } from "./SocialSharePanel";
 import styles from "./SearchSurfaces.module.css";
 
 function errorLabel(error: unknown): string {
@@ -73,43 +74,47 @@ export async function HomeScreen() {
         )}
       </section>
 
-      <section aria-labelledby="recent-title" className={`${styles.reveal} ${styles.revealDelay2}`}>
-        <div className="mb-6 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase text-[var(--color-leaf)]">Từ cộng đồng</p>
-            <h2 id="recent-title" className="mt-1 font-sans text-3xl font-semibold">Mới đăng</h2>
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-start">
+        <section aria-labelledby="recent-title" className={`${styles.reveal} ${styles.revealDelay2}`}>
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase text-[var(--color-leaf)]">Từ cộng đồng</p>
+              <h2 id="recent-title" className="mt-1 font-sans text-3xl font-semibold">Mới đăng</h2>
+            </div>
+            <Link className="text-sm font-semibold text-[var(--color-leaf)] underline-offset-4 hover:underline" href="/recipes">Xem tất cả</Link>
           </div>
-          <Link className="text-sm font-semibold text-[var(--color-leaf)] underline-offset-4 hover:underline" href="/recipes">Xem tất cả</Link>
-        </div>
-        {recipeResult.status === "fulfilled" ? (
-          <RecipeGrid recipes={recent} />
-        ) : (
-          <p className="text-sm text-[var(--muted)]">Danh sách mới đăng chưa thể tải.</p>
-        )}
-      </section>
+          {recipeResult.status === "fulfilled" ? (
+            <RecipeGrid recipes={recent} />
+          ) : (
+            <p className="text-sm text-[var(--muted)]">Danh sách mới đăng chưa thể tải.</p>
+          )}
+        </section>
 
-      <section aria-labelledby="categories-title" className={`${styles.reveal} ${styles.revealDelay3} border-t border-white/15 pt-8`}>
-        <div className="mb-5">
-          <p className="text-xs font-bold uppercase text-[var(--color-tomato)]">Chọn theo khẩu vị</p>
-          <h2 id="categories-title" className="mt-1 font-sans text-3xl font-semibold">Danh mục</h2>
-        </div>
-        {categoryResult.status === "rejected" ? (
-          <p className="border-y border-black/10 py-5 text-sm text-[var(--muted)]" role="status">{errorLabel(categoryResult.reason)}</p>
-        ) : categories.length === 0 ? (
-          <p className="border-y border-black/10 py-5 text-sm text-[var(--muted)]">Chưa có danh mục.</p>
-        ) : (
-          <ul className={styles.categoryGrid}>
-            {categories.map((category) => (
-              <li key={category.id} className="border-t border-black/10 py-4">
-                <Link className="font-sans text-lg font-semibold hover:text-[var(--color-leaf)]" href={`/categories/${encodeURIComponent(category.slug)}`}>
-                  {category.name}
-                </Link>
-                <p className="mt-1 text-xs text-[var(--muted)]">{category.recipeCount} công thức</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        <aside aria-labelledby="categories-title" className={`${styles.reveal} ${styles.revealDelay3} border-t border-white/15 pt-6 lg:sticky lg:top-8`}>
+          <div className="mb-4">
+            <p className="text-xs font-bold uppercase text-[var(--color-tomato)]">Chọn theo khẩu vị</p>
+            <h2 id="categories-title" className="mt-1 font-sans text-2xl font-semibold">Danh mục</h2>
+          </div>
+          {categoryResult.status === "rejected" ? (
+            <p className="border-y border-white/10 py-4 text-sm text-[var(--muted)]" role="status">{errorLabel(categoryResult.reason)}</p>
+          ) : categories.length === 0 ? (
+            <p className="border-y border-white/10 py-4 text-sm text-[var(--muted)]">Chưa có danh mục.</p>
+          ) : (
+            <ul className="divide-y divide-white/10">
+              {categories.map((category) => (
+                <li key={category.id} className="py-3">
+                  <Link className="font-sans font-semibold hover:text-[var(--color-leaf)]" href={`/categories/${encodeURIComponent(category.slug)}`}>
+                    {category.name}
+                  </Link>
+                  <p className="mt-1 text-xs text-[var(--muted)]">{category.recipeCount} công thức</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </aside>
+      </div>
+
+      <SocialSharePanel />
     </div>
   );
 }
