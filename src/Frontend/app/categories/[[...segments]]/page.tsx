@@ -34,7 +34,9 @@ export async function generateMetadata({ params }: PageProps<"/categories/[[...s
   return buildPageMetadata({
     title: category.name,
     description: category.description ?? `Khám phá công thức thuộc danh mục ${category.name}.`,
-    path: `/categories/${encodeURIComponent(route.slug)}`,
+    path: route.page === 1
+      ? `/categories/${encodeURIComponent(route.slug)}`
+      : `/categories/${encodeURIComponent(route.slug)}/page/${route.page}`,
   });
 }
 

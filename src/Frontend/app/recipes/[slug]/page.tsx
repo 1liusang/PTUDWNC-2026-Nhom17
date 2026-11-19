@@ -26,6 +26,7 @@ export async function generateMetadata({ params }: RecipeDetailPageProps): Promi
       title: recipe.title,
       description: recipe.description || `Xem cách làm món ${recipe.title}`,
       path: `/recipes/${encodeURIComponent(recipe.slug)}`,
+      image: `/recipes/${encodeURIComponent(recipe.slug)}/opengraph-image`,
     });
   } catch {
     return { title: "Không tìm thấy công thức", robots: { index: false, follow: false } };
