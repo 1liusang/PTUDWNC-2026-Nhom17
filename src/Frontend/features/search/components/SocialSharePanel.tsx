@@ -26,7 +26,6 @@ export function SocialSharePanel({
   const shareMessage = `Khám phá ${title} tại Culinary Blog`;
   const facebookUrl = new URL("https://www.facebook.com/sharer/sharer.php");
   facebookUrl.searchParams.set("u", absoluteShareUrl);
-  facebookUrl.searchParams.set("quote", shareMessage);
   const xUrl = new URL("https://twitter.com/intent/tweet");
   xUrl.searchParams.set("url", absoluteShareUrl);
   xUrl.searchParams.set("text", shareMessage);
